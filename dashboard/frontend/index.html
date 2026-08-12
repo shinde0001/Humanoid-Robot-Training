@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. | PARTH Telemetry</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="overlay-grid"></div>
+    <div class="container">
+        
+        <!-- HEADER -->
+        <header class="dashboard-header">
+            <div class="brand">
+                <h1>J.A.R.V.I.S. <span>[PARTH]</span></h1>
+                <p>SIM-TO-REAL FLIGHT TELEMETRY SYSTEM</p>
+            </div>
+            <div class="status-indicator">
+                <div class="pulse-dot" id="connection-dot"></div>
+                <span id="connection-text">CONNECTING...</span>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="dashboard-grid">
+            
+            <!-- LEFT COLUMN: VISION -->
+            <section class="panel glass-panel vision-panel">
+                <div class="panel-header">
+                    <h2>OPTICAL SENSOR ARRAY</h2>
+                    <span class="badge">ACTIVE</span>
+                </div>
+                <div class="video-container">
+                    <img id="camera-feed" src="" alt="Awaiting Video Stream...">
+                    <div class="crosshair"></div>
+                    <div class="scanline"></div>
+                </div>
+                <div class="telemetry-readout">
+                    <div class="readout-item">
+                        <span class="label">SYS TIME</span>
+                        <span class="value" id="sim-time">0.000s</span>
+                    </div>
+                    <div class="readout-item">
+                        <span class="label">GAIT STATE</span>
+                        <span class="value highlight" id="gait-state">UNKNOWN</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CENTER COLUMN: DIAGNOSTICS -->
+            <section class="panel glass-panel diagnostics-panel">
+                <div class="panel-header">
+                    <h2>ACTUATOR DIAGNOSTICS</h2>
+                    <span class="badge">19 DOF</span>
+                </div>
+                <div class="joints-container" id="joints-container">
+                    <!-- Joint bars will be injected here via JS -->
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: COMMAND & CONTROL -->
+            <section class="panel glass-panel control-panel">
+                <div class="panel-header danger-header">
+                    <h2>TACTICAL COMMAND</h2>
+                </div>
+                
+                <div class="safety-module">
+                    <button id="btn-estop" class="btn btn-danger btn-massive">
+                        EMERGENCY STOP
+                    </button>
+                    <div id="estop-warning" class="warning-banner hidden">
+                        SYSTEM HALTED: E-STOP ACTIVE
+                    </div>
+                </div>
+
+                <div class="validation-module">
+                    <h3>VALIDATION GATE</h3>
+                    <div class="pending-command-box" id="pending-command-box">
+                        <span class="label">AWAITING AI PROPOSAL...</span>
+                        <span class="cmd-type" id="pending-cmd-text">NONE</span>
+                    </div>
+                    <div class="validation-actions">
+                        <button id="btn-approve" class="btn btn-success" disabled>APPROVE</button>
+                        <button id="btn-reject" class="btn btn-outline" disabled>REJECT</button>
+                    </div>
+                </div>
+
+                <div class="manual-module">
+                    <h3>MANUAL OVERRIDE</h3>
+                    <div class="d-pad">
+                        <button class="d-btn up" onclick="sendOverride('walk', 0.5, 0, 0)">W</button>
+                        <button class="d-btn left" onclick="sendOverride('walk', 0, 0.5, 0)">A</button>
+                        <button class="d-btn down" onclick="sendOverride('walk', -0.5, 0, 0)">S</button>
+                        <button class="d-btn right" onclick="sendOverride('walk', 0, -0.5, 0)">D</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline-cyan" onclick="sendOverride('stand',0,0,0)">STAND</button>
+                        <button class="btn btn-outline-cyan" onclick="sendOverride('crouch',0,0,0)">CROUCH</button>
+                    </div>
+                    <button id="btn-clear-override" class="btn btn-outline-orange mt-2 hidden">CLEAR OVERRIDE</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
