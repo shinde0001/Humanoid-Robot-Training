@@ -36,8 +36,8 @@ class SimBackend(RobotBackend):
         
         state = RobotState(
             timestamp=self.data.time,
-            joint_positions=self.data.qpos.copy(),
-            joint_velocities=self.data.qvel.copy(),
+            joint_positions=self.data.qpos[7:].copy(),
+            joint_velocities=self.data.qvel[6:].copy(),
             joint_torques=self.data.ctrl.copy(),
             imu=imu_data,
             contact_forces=np.zeros(2),
