@@ -6,6 +6,7 @@ from control.pid import PDController
 from control.gait_engine import GaitEngine
 from command.parser import CommandParser, RobotCommand
 from command.validation import ValidationGate, ManualOverride
+from recorder.blackbox import DataRecorder
 
 class CoreSimulation:
     def __init__(self, backend, config):
@@ -22,6 +23,9 @@ class CoreSimulation:
         self.safety = SafetyController(self.dt)
         self.validation_gate = ValidationGate()
         self.manual_override = ManualOverride()
+        
+        # Initialize Recorder
+        self.recorder = DataRecorder(self.rate_hz, history_seconds=60)
         
         # Initialize Control
         kp = np.ones(19) * 200.0  # Proportional gain
@@ -103,17 +107,23 @@ class CoreSimulation:
             
             if self.safety.is_estopped():
                 self.backend.emergency_stop()
-                self.logger.critical("E-STOP active. Halting loop.")
+                self.logger.critical("E-STOP active. Halting loop and dumping crash data.")
+                self.recorder.dump_to_disk("crash_report.npz")
                 self.stop()
                 break
             
             # 5. ACT
             self.backend.send_commands(safe_torques)
             
-            # 6. STEP
+            # 7. RECORD DATA
+            self.recorder.record_tick(state)
+            
+            # 8. STEP
             self.backend.step()
                 
             step_count += 1
             if num_steps is not None and step_count >= num_steps:
+                self.logger.info("Simulation completed requested steps.")
+                self.recorder.dump_to_disk("flight_data_normal.npz")
                 self.stop()
                 break
