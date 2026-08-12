@@ -23,21 +23,24 @@ def test_control_and_commands():
     
     # 1. Test Stand Command
     cmd_stand = json.dumps({"type": "stand"})
-    sim.send_command_string(cmd_stand)
+    sim.propose_command_string(cmd_stand)
+    sim.approve_pending_command()
     
     print("Stepping 100 times in stand mode...")
     sim.step_loop(num_steps=100)
     
     # 2. Test Walk Command
     cmd_walk = json.dumps({"type": "walk", "v_x": 0.5})
-    sim.send_command_string(cmd_walk)
+    sim.propose_command_string(cmd_walk)
+    sim.approve_pending_command()
     
     print("Stepping 200 times in walk mode...")
     sim.step_loop(num_steps=200)
     
     # 3. Test Crouch Command
     cmd_crouch = json.dumps({"type": "crouch"})
-    sim.send_command_string(cmd_crouch)
+    sim.propose_command_string(cmd_crouch)
+    sim.approve_pending_command()
     
     print("Stepping 100 times in crouch mode...")
     sim.step_loop(num_steps=100)
