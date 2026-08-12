@@ -91,17 +91,37 @@
                 </div>
 
                 <div class="manual-module">
-                    <h3>MANUAL OVERRIDE (WASD / D-PAD)</h3>
+                    <h3>MANUAL CONTROL &amp; ACTIONS</h3>
                     <div class="d-pad">
                         <button class="d-btn up" id="dpad-w" title="Walk Forward (W / ↑)">W</button>
                         <button class="d-btn left" id="dpad-a" title="Turn Left (A / ←)">A</button>
                         <button class="d-btn down" id="dpad-s" title="Walk Backward (S / ↓)">S</button>
                         <button class="d-btn right" id="dpad-d" title="Turn Right (D / →)">D</button>
                     </div>
-                    <div class="action-buttons">
-                        <button id="btn-stand" class="btn btn-outline-cyan" title="Stand Up (Space)">STAND</button>
-                        <button id="btn-crouch" class="btn btn-outline-cyan" title="Crouch Pose (C)">CROUCH</button>
+
+                    <div class="section-label">LOCOMOTION &amp; STANCE</div>
+                    <div class="action-grid-3">
+                        <button id="btn-stand" class="btn btn-outline-cyan btn-sm" title="Stand (Space / Esc)">STAND</button>
+                        <button id="btn-crouch" class="btn btn-outline-cyan btn-sm" title="Crouch (C)">CROUCH</button>
+                        <button id="btn-jump" class="btn btn-outline-cyan btn-sm" title="Dynamic Jump (J)">JUMP 🚀</button>
                     </div>
+
+                    <div class="section-label">HAND &amp; ARM GESTURES</div>
+                    <div class="action-grid-4">
+                        <button id="btn-wave" class="btn btn-outline-cyan btn-sm" title="Wave Right Hand (H)">WAVE 👋</button>
+                        <button id="btn-punch" class="btn btn-outline-cyan btn-sm" title="Boxing Punch (P)">PUNCH 🥊</button>
+                        <button id="btn-victory" class="btn btn-outline-cyan btn-sm" title="Victory Cheer (V)">VICTORY ✌️</button>
+                        <button id="btn-fight" class="btn btn-outline-cyan btn-sm" title="Fight Stance (F)">GUARD 🛡️</button>
+                    </div>
+
+                    <div class="section-label">HEAD &amp; TORSO TRACKING</div>
+                    <div class="action-grid-4">
+                        <button id="btn-look-left" class="btn btn-outline-cyan btn-sm" title="Look Left (Q)">LOOK L ◀</button>
+                        <button id="btn-look-right" class="btn btn-outline-cyan btn-sm" title="Look Right (E)">LOOK R ▶</button>
+                        <button id="btn-scan" class="btn btn-outline-cyan btn-sm" title="Radar Scan (R)">SCAN 🔄</button>
+                        <button id="btn-bow" class="btn btn-outline-cyan btn-sm" title="Respectful Bow (B)">BOW 🙇</button>
+                    </div>
+
                     <button id="btn-clear-override" class="btn btn-outline-orange mt-2 hidden">CLEAR OVERRIDE</button>
                 </div>
             </section>

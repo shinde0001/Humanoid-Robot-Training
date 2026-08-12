@@ -311,7 +311,27 @@ h3 { font-size: 1rem; color: var(--text-muted); margin-bottom: 15px; letter-spac
 }
 
 .validation-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+.action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.action-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+.action-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+
+.section-label {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    color: var(--neon-cyan);
+    opacity: 0.8;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.btn-sm {
+    padding: 8px 4px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
 
 /* D-PAD */
 .d-pad {

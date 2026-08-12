@@ -228,23 +228,30 @@ setupDpadButton(dpadA, 'a');
 setupDpadButton(dpadS, 's');
 setupDpadButton(dpadD, 'd');
 
-if (btnStand) {
-    btnStand.addEventListener('click', () => {
-        activeKeys.clear();
-        updateDpadVisuals();
-        sendOverride('stand', 0, 0, 0);
-    });
+function bindActionButton(id, cmdType) {
+    const btn = document.getElementById(id);
+    if (btn) {
+        btn.addEventListener('click', () => {
+            activeKeys.clear();
+            updateDpadVisuals();
+            sendOverride(cmdType, 0, 0, 0);
+        });
+    }
 }
 
-if (btnCrouch) {
-    btnCrouch.addEventListener('click', () => {
-        activeKeys.clear();
-        updateDpadVisuals();
-        sendOverride('crouch', 0, 0, 0);
-    });
-}
+bindActionButton('btn-stand', 'stand');
+bindActionButton('btn-crouch', 'crouch');
+bindActionButton('btn-jump', 'jump');
+bindActionButton('btn-wave', 'wave');
+bindActionButton('btn-punch', 'punch');
+bindActionButton('btn-victory', 'victory');
+bindActionButton('btn-fight', 'fight');
+bindActionButton('btn-look-left', 'look_left');
+bindActionButton('btn-look-right', 'look_right');
+bindActionButton('btn-scan', 'scan');
+bindActionButton('btn-bow', 'bow');
 
-// Keyboard binding for WASD / Arrow keys manual override
+// Keyboard binding for WASD / Arrow keys and Action Hotkeys
 document.addEventListener('keydown', (e) => {
     if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
     
@@ -270,14 +277,50 @@ document.addEventListener('keydown', (e) => {
             activeKeys.add('d');
             processNavigationCommand();
         }
-    } else if (key === 'c') {
-        activeKeys.clear();
-        updateDpadVisuals();
-        sendOverride('crouch', 0, 0, 0);
     } else if (key === ' ' || key === 'escape') {
         activeKeys.clear();
         updateDpadVisuals();
         sendOverride('stand', 0, 0, 0);
+    } else if (key === 'c') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('crouch', 0, 0, 0);
+    } else if (key === 'j') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('jump', 0, 0, 0);
+    } else if (key === 'h') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('wave', 0, 0, 0);
+    } else if (key === 'p') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('punch', 0, 0, 0);
+    } else if (key === 'v') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('victory', 0, 0, 0);
+    } else if (key === 'f') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('fight', 0, 0, 0);
+    } else if (key === 'q') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('look_left', 0, 0, 0);
+    } else if (key === 'e') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('look_right', 0, 0, 0);
+    } else if (key === 'r') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('scan', 0, 0, 0);
+    } else if (key === 'b') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('bow', 0, 0, 0);
     }
 });
 
