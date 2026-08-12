@@ -5,8 +5,17 @@ import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="PARTH Dashboard API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Global reference to the core simulation engine
 sim_instance = None
@@ -86,10 +95,17 @@ async def websocket_video(websocket: WebSocket):
                 except NotImplementedError:
                     pass
                 except Exception as e:
-                    print("Video render error:", e)
+                    pass
             await asyncio.sleep(1 / 15.0) # 15 Hz for video stream
     except WebSocketDisconnect:
         pass
+
+# Mount frontend directory for direct dashboard access
+import os
+from fastapi.staticfiles import StaticFiles
+frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+if os.path.exists(frontend_dir):
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 
 def run_server(sim, host="0.0.0.0", port=8000):
     global sim_instance

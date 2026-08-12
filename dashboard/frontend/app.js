@@ -1,6 +1,9 @@
-const WS_URL_TELEMETRY = "ws://127.0.0.1:8000/ws/telemetry";
-const WS_URL_VIDEO = "ws://127.0.0.1:8000/ws/video";
-const API_URL = "http://127.0.0.1:8000/api";
+const host = window.location.host || "localhost:8000";
+const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+const httpProto = window.location.protocol === "https:" ? "https:" : "http:";
+const WS_URL_TELEMETRY = `${wsProto}//${host}/ws/telemetry`;
+const WS_URL_VIDEO = `${wsProto}//${host}/ws/video`;
+const API_URL = `${httpProto}//${host}/api`;
 
 const JOINT_NAMES = [
     "l_hip_y", "l_hip_r", "l_hip_p", "l_knee", "l_ankle",

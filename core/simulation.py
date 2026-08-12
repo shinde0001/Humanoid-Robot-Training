@@ -120,6 +120,12 @@ class CoreSimulation:
             
             # 8. STEP
             self.backend.step()
+            
+            # Real-time pacing (200 Hz)
+            elapsed = time.perf_counter() - tick_start
+            sleep_time = target_dt - elapsed
+            if sleep_time > 0.0005:
+                time.sleep(sleep_time)
                 
             step_count += 1
             if num_steps is not None and step_count >= num_steps:

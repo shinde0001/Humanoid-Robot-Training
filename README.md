@@ -72,13 +72,14 @@ pip3 install mujoco numpy fastapi uvicorn pydantic websockets opencv-python
 ### 2. Booting the Engine
 Run the master start script to spin up the physics engine, the API, and the Web UI simultaneously:
 ```bash
+cd parth_sim
 ./run.sh
 ```
 
 ### 3. Accessing the Dashboard
 Open your browser and navigate to:
 ```
-http://localhost:8080/
+http://localhost:8000/
 ```
 From here you can view the live telemetry, see the optical array, manually steer the robot using `WASD`, or approve incoming programmatic AI commands.
 

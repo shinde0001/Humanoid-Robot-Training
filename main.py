@@ -27,7 +27,7 @@ def main():
     # Launch Dashboard API Server in a background thread
     api_thread = threading.Thread(target=run_server, args=(sim, "0.0.0.0", 8000), daemon=True)
     api_thread.start()
-    logger.info("Dashboard API Server running on ws://0.0.0.0:8000")
+    logger.info("J.A.R.V.I.S. Dashboard & Telemetry active at http://localhost:8000")
     
     try:
         logger.info("Running simulation loop. Press Ctrl+C to stop.")

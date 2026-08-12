@@ -1,0 +1,47 @@
+==========================================
+    INITIALIZING PROJECT PARTH            
+==========================================
+[1/2] Starting J.A.R.V.I.S. Dashboard Server on port 8080...
+[2/2] Booting MuJoCo Simulation Engine & Hardware Abstraction Layer...
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/usr/lib/python3.10/http/server.py", line 1307, in <module>
+    test(
+  File "/usr/lib/python3.10/http/server.py", line 1258, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+  File "/usr/lib/python3.10/socketserver.py", line 452, in __init__
+    self.server_bind()
+  File "/usr/lib/python3.10/http/server.py", line 1301, in server_bind
+    return super().server_bind()
+  File "/usr/lib/python3.10/http/server.py", line 137, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/lib/python3.10/socketserver.py", line 466, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+2026-08-12 12:11:12,485 - PARTH_MAIN - INFO - --- Project PARTH Simulation Booting ---
+2026-08-12 12:11:12,485 - PARTH_MAIN - INFO - Configured Backend: sim
+2026-08-12 12:11:12,753 - SimulationCore - INFO - Started simulation loop at 200 Hz with backend: sim
+2026-08-12 12:11:12,755 - PARTH_MAIN - INFO - Dashboard API Server running on ws://0.0.0.0:8000
+2026-08-12 12:11:12,755 - PARTH_MAIN - INFO - Running simulation loop. Press Ctrl+C to stop.
+2026-08-12 12:11:12,755 - SimulationCore - INFO - Step 0 | Sim Time: 0.000s | Gait State: stand
+2026-08-12 12:11:12,938 - SimulationCore - INFO - Step 1000 | Sim Time: 5.000s | Gait State: stand
+2026-08-12 12:11:13,098 - SimulationCore - INFO - Step 2000 | Sim Time: 10.000s | Gait State: stand
+2026-08-12 12:11:13,261 - SimulationCore - INFO - Step 3000 | Sim Time: 15.000s | Gait State: stand
+2026-08-12 12:11:13,417 - SimulationCore - INFO - Step 4000 | Sim Time: 20.000s | Gait State: stand
+2026-08-12 12:11:13,577 - SimulationCore - INFO - Step 5000 | Sim Time: 25.000s | Gait State: stand
+2026-08-12 12:11:13,736 - SimulationCore - INFO - Step 6000 | Sim Time: 30.000s | Gait State: stand
+2026-08-12 12:11:13,893 - SimulationCore - INFO - Step 7000 | Sim Time: 35.000s | Gait State: stand
+2026-08-12 12:11:14,056 - SimulationCore - INFO - Step 8000 | Sim Time: 40.000s | Gait State: stand
+2026-08-12 12:11:14,220 - SimulationCore - INFO - Step 9000 | Sim Time: 45.000s | Gait State: stand
+2026-08-12 12:11:14,384 - SimulationCore - INFO - Step 10000 | Sim Time: 50.000s | Gait State: stand
+2026-08-12 12:11:14,544 - SimulationCore - INFO - Step 11000 | Sim Time: 55.000s | Gait State: stand
+2026-08-12 12:11:14,580 - SafetyController - ERROR - E-STOP TRIGGERED! Reason: MANUAL E-STOP HIT!
+2026-08-12 12:11:14,581 - SimulationCore - CRITICAL - E-STOP active. Halting loop and dumping crash data.
+2026-08-12 12:11:14,941 - DataRecorder - INFO - Black box data dumped to data/recordings/crash_report.npz
+2026-08-12 12:11:14,941 - SimulationCore - INFO - Simulation stopped.
+2026-08-12 12:11:14,941 - PARTH_MAIN - INFO - System Shutdown Complete.
+Simulation Engine terminated. Shutting down Dashboard Server...
+./run.sh: line 26: kill: (19753) - No such process
