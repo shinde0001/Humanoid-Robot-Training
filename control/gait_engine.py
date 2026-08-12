@@ -185,9 +185,37 @@ class GaitEngine:
             self.target_height = 0.98
             
         elif self.current_state == 'bow':
-            self.target_positions = BOW_POSE.copy()
+            pos = STAND_POSE.copy()
+            if self.action_time < 0.6:
+                # Bowing down
+                frac = self.action_time / 0.6
+                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.4 - 0.4 * frac
+                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.4 - 0.4 * frac
+                pos[JOINT_NAMES.index("left_knee")] = 0.8 - 0.3 * frac
+                pos[JOINT_NAMES.index("right_knee")] = 0.8 - 0.3 * frac
+                self.target_height = 0.98 - 0.08 * frac
+            elif self.action_time < 1.4:
+                # Holding bow
+                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.8
+                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.8
+                pos[JOINT_NAMES.index("left_knee")] = 0.5
+                pos[JOINT_NAMES.index("right_knee")] = 0.5
+                self.target_height = 0.90
+            elif self.action_time < 2.0:
+                # Rising back up
+                frac = (self.action_time - 1.4) / 0.6
+                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.8 + 0.4 * frac
+                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.8 + 0.4 * frac
+                pos[JOINT_NAMES.index("left_knee")] = 0.5 + 0.3 * frac
+                pos[JOINT_NAMES.index("right_knee")] = 0.5 + 0.3 * frac
+                self.target_height = 0.90 + 0.08 * frac
+            else:
+                # Settle back to stand
+                pos = STAND_POSE.copy()
+                self.target_height = 0.98
+                self.current_state = 'stand'
+            self.target_positions = pos
             self.target_velocities = np.zeros(NUM_JOINTS)
-            self.target_height = 0.95
             
         elif self.current_state == 'walk':
             # Kinematic sinusoidal gait coordinated with STAND_POSE

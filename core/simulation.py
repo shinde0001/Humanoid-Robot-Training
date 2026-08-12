@@ -127,6 +127,10 @@ class CoreSimulation:
             # Determine target kinematic pose from GaitEngine
             target_pos, target_vel = self.gait_engine.update()
             
+            # Auto-clear one-shot overrides (jump, bow) once completed
+            if override and override.type in ['jump', 'bow'] and self.gait_engine.current_state == 'stand':
+                self.manual_override.clear_override()
+            
             # Calculate torques via PD Control
             raw_command_torques = self.controller.compute(
                 target_positions=target_pos,
