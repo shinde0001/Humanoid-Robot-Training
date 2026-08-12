@@ -77,19 +77,32 @@ class SimBackend(RobotBackend):
         pelvis_id = self.model.body("pelvis").id
         dt = self.model.opt.timestep
         
-        # Integrate heading angle when turning command is active
+        # Integrate commanded heading angle when turning command is active
         if abs(self.nav_vyaw) > 1e-4:
             self.target_yaw += self.nav_vyaw * dt
             
-        # Target heading quaternion [w, 0, 0, z]
-        w_t = np.cos(self.target_yaw / 2.0)
-        z_t = np.sin(self.target_yaw / 2.0)
+        # 1. Pelvis rotation matrix in world frame (3x3)
+        R = self.data.xmat[pelvis_id].reshape(3, 3)
         
-        # Orientation stabilizer to commanded heading
-        quat = self.data.qpos[3:7] # [w, x, y, z]
-        err_rot = 2.0 * (quat[1:4] * w_t - np.array([0.0, 0.0, z_t]) * quat[0] - np.cross(quat[1:4], [0.0, 0.0, z_t]))
-        ang_vel = self.data.qvel[3:6]
-        torque_assist = -500.0 * err_rot - 50.0 * ang_vel
+        # 2. Continuous heading angle (yaw) around global Z axis
+        current_yaw = np.arctan2(R[1, 0], R[0, 0])
+        
+        # 3. Shortest angular yaw difference in [-pi, pi] (seamless 360-degree rotation)
+        yaw_err = np.arctan2(np.sin(self.target_yaw - current_yaw), np.cos(self.target_yaw - current_yaw))
+        
+        # 4. Upright tilt errors in world frame (cross-product of body Z with global Z)
+        roll_err = R[1, 2]
+        pitch_err = -R[0, 2]
+        err_rot = np.array([roll_err, pitch_err, yaw_err])
+        
+        # 5. Transform angular velocity from body frame to world frame
+        ang_vel_body = self.data.qvel[3:6]
+        ang_vel_world = R @ ang_vel_body
+        
+        # 6. Global-frame stabilizing torque
+        kp = np.array([400.0, 400.0, 300.0])
+        kd = np.array([40.0, 40.0, 30.0])
+        torque_assist = kp * err_rot - kd * ang_vel_world
         
         # Height spring-damper to maintain commanded target height
         z = self.data.qpos[2]
