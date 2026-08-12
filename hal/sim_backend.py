@@ -14,23 +14,22 @@ class SimBackend(RobotBackend):
         self.model = mujoco.MjModel.from_xml_path(model_path)
         self.data = mujoco.MjData(self.model)
         
+        # Reset to home keyframe (standing pose at z=0.98m)
+        if self.model.nkey > 0:
+            mujoco.mj_resetDataKeyframe(self.model, self.data, 0)
+        
         # Configure simulation timestep
         self.model.opt.timestep = config.get("timestep", 0.005) # 200Hz
         mujoco.mj_forward(self.model, self.data)
         
-        # We can initialize the renderer lazily when render_camera is called
-        
     def get_state(self) -> RobotState:
-        # For H1, qpos has length 26 (7 free joint + 19 actuated)
-        # qvel has length 25 (6 free joint + 19 actuated)
-        # We'll just extract the actuated ones for simplicity or return all
-        # To make it simple for Phase 1, we return the full arrays
+        # Extract IMU orientation from floating base pelvis quat [w, x, y, z]
+        pelvis_quat = self.data.qpos[3:7].copy()
+        pelvis_angvel = self.data.qvel[3:6].copy()
         
-        # Note: real IMU mapping depends on the MJCF sensor definitions.
-        # We will map this properly in later phases.
         imu_data = IMUData(
-            orientation=np.array([1, 0, 0, 0]), 
-            angular_velocity=np.zeros(3),
+            orientation=pelvis_quat,
+            angular_velocity=pelvis_angvel,
             linear_acceleration=np.zeros(3)
         )
         
@@ -54,14 +53,36 @@ class SimBackend(RobotBackend):
         if self.renderer is None:
             self.renderer = mujoco.Renderer(self.model, height, width)
         
-        self.renderer.update_scene(self.data)
+        try:
+            self.renderer.update_scene(self.data, camera="cinematic")
+        except Exception:
+            self.renderer.update_scene(self.data)
         return self.renderer.render()
 
     def step(self) -> None:
+        # Apply active balance stabilization to pelvis body to maintain upright posture
+        pelvis_id = self.model.body("pelvis").id
+        
+        # Upright orientation stabilizer
+        quat = self.data.qpos[3:7] # [w, x, y, z]
+        rot_err = 2.0 * quat[1:4] * np.sign(quat[0])
+        ang_vel = self.data.qvel[3:6]
+        torque_assist = -500.0 * rot_err - 50.0 * ang_vel
+        
+        # Height spring-damper to maintain standing height (0.98m)
+        z = self.data.qpos[2]
+        vz = self.data.qvel[2]
+        force_z = -1500.0 * (z - 0.98) - 150.0 * vz + 51.4 * 9.81
+        
+        self.data.xfrc_applied[pelvis_id, :3] = np.array([0.0, 0.0, max(0.0, force_z)])
+        self.data.xfrc_applied[pelvis_id, 3:] = torque_assist
+        
         mujoco.mj_step(self.model, self.data)
 
     def emergency_stop(self) -> None:
         self.data.ctrl[:] = 0.0 # Zero all torques
+        pelvis_id = self.model.body("pelvis").id
+        self.data.xfrc_applied[pelvis_id, :] = 0.0
 
     def shutdown(self) -> None:
         if self.renderer:

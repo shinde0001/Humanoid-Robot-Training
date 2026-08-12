@@ -45,31 +45,26 @@ class GaitEngine:
             self.target_velocities = np.zeros(NUM_JOINTS)
             
         elif self.current_state == 'walk':
-            # Simple kinematic sinusoidal gait on top of STAND_POSE
+            # Kinematic sinusoidal gait coordinated with STAND_POSE
             phase = 2.0 * np.pi * self.step_frequency * self.time_elapsed
             
+            pos = STAND_POSE.copy()
+            amp = self.step_height * (np.abs(self.walk_speed_x) + 0.5)
+            
             # Left leg
-            left_hip_pitch_idx = JOINT_NAMES.index("left_hip_pitch")
-            left_knee_idx = JOINT_NAMES.index("left_knee")
+            pos[JOINT_NAMES.index("left_hip_pitch")] += np.sin(phase) * amp
+            pos[JOINT_NAMES.index("left_knee")] += np.abs(np.cos(phase)) * amp
+            pos[JOINT_NAMES.index("left_ankle")] -= np.sin(phase) * amp * 0.5
             
             # Right leg
-            right_hip_pitch_idx = JOINT_NAMES.index("right_hip_pitch")
-            right_knee_idx = JOINT_NAMES.index("right_knee")
+            pos[JOINT_NAMES.index("right_hip_pitch")] += np.sin(phase + np.pi) * amp
+            pos[JOINT_NAMES.index("right_knee")] += np.abs(np.cos(phase + np.pi)) * amp
+            pos[JOINT_NAMES.index("right_ankle")] -= np.sin(phase + np.pi) * amp * 0.5
             
-            # Start from stand pose base
-            pos = STAND_POSE.copy()
+            # Natural arm swings
+            pos[JOINT_NAMES.index("left_shoulder_pitch")] -= np.sin(phase) * 0.3
+            pos[JOINT_NAMES.index("right_shoulder_pitch")] -= np.sin(phase + np.pi) * 0.3
             
-            # Very naive sinusoidal trajectory for testing actuation in Phase 3
-            amp = self.step_height * (np.abs(self.walk_speed_x) + 0.1)
-            
-            # Sine waves 180 degrees out of phase for walking
-            pos[left_hip_pitch_idx] += np.sin(phase) * amp
-            pos[left_knee_idx] += np.abs(np.cos(phase)) * amp  # Knee always bends same direction
-            
-            pos[right_hip_pitch_idx] += np.sin(phase + np.pi) * amp
-            pos[right_knee_idx] += np.abs(np.cos(phase + np.pi)) * amp
-            
-            # Velocities could be derived mathematically, zeroing for naive PD control
             self.target_positions = pos
             self.target_velocities = np.zeros(NUM_JOINTS)
             

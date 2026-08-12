@@ -27,9 +27,9 @@ class CoreSimulation:
         # Initialize Recorder
         self.recorder = DataRecorder(self.rate_hz, history_seconds=60)
         
-        # Initialize Control
-        kp = np.ones(19) * 200.0  # Proportional gain
-        kd = np.ones(19) * 10.0   # Derivative gain
+        # Initialize Control with tuned joint gains
+        kp = np.array([200, 200, 350, 350, 150,  200, 200, 350, 350, 150,  200,  80, 80, 40, 40,  80, 80, 40, 40], dtype=float)
+        kd = np.array([20, 20, 30, 30, 15,  20, 20, 30, 30, 15,  20,  10, 10, 5, 5,  10, 10, 5, 5], dtype=float)
         self.controller = PDController(kp, kd)
         self.gait_engine = GaitEngine(self.dt)
         self.parser = CommandParser()
