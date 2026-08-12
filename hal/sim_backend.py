@@ -119,6 +119,23 @@ class SimBackend(RobotBackend):
         pelvis_id = self.model.body("pelvis").id
         self.data.xfrc_applied[pelvis_id, :] = 0.0
 
+    def reset_to_home(self) -> None:
+        """Reset simulation state to the home keyframe (upright standing stance)."""
+        if self.model and self.data:
+            if self.model.nkey > 0:
+                mujoco.mj_resetDataKeyframe(self.model, self.data, 0)
+            else:
+                mujoco.mj_resetData(self.model, self.data)
+            self.target_yaw = 0.0
+            self.nav_vx = 0.0
+            self.nav_vy = 0.0
+            self.nav_vyaw = 0.0
+            self.target_height = 0.98
+            self.current_mode = "stand"
+            pelvis_id = self.model.body("pelvis").id
+            self.data.xfrc_applied[pelvis_id, :] = 0.0
+            mujoco.mj_forward(self.model, self.data)
+
     def shutdown(self) -> None:
         if self.renderer:
             self.renderer.close()

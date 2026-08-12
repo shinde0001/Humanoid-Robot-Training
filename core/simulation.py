@@ -66,9 +66,20 @@ class CoreSimulation:
         if cmd:
             self.gait_engine.set_command(cmd.type, {"v_x": cmd.v_x, "v_y": cmd.v_y, "v_yaw": cmd.v_yaw})
 
+    def reset_estop(self):
+        """Called by Dashboard UI to release E-STOP and restore upright standing stance."""
+        self.safety.reset_estop()
+        self.manual_override.clear_override()
+        self.gait_engine.set_command('stand', {})
+        if hasattr(self.backend, "reset_to_home"):
+            self.backend.reset_to_home()
+        self._crash_dumped = False
+        self.logger.info("E-STOP released. Robot restored to safe standing stance.")
+
     def step_loop(self, num_steps=None):
         step_count = 0
         target_dt = self.dt
+        self._crash_dumped = False
         
         while self.running:
             tick_start = time.perf_counter()
@@ -82,6 +93,30 @@ class CoreSimulation:
             # Logging
             if step_count % 1000 == 0:
                 self.logger.info(f"Step {step_count} | Sim Time: {state.timestamp:.3f}s | Gait State: {self.gait_engine.current_state}")
+                
+            # Check E-STOP state
+            if self.safety.is_estopped():
+                self.backend.emergency_stop()
+                if not self._crash_dumped:
+                    self.logger.critical("E-STOP active. Robot immobilized in safe holding mode.")
+                    self.recorder.dump_to_disk("crash_report.npz")
+                    self._crash_dumped = True
+                
+                # In batch test mode, exit loop
+                if num_steps is not None:
+                    self.stop()
+                    break
+                
+                # In live mode, step physics with zero torques and pace loop
+                self.backend.step()
+                elapsed = time.perf_counter() - tick_start
+                sleep_time = target_dt - elapsed
+                if sleep_time > 0.0005:
+                    time.sleep(sleep_time)
+                step_count += 1
+                continue
+            else:
+                self._crash_dumped = False
                 
             # 3. THINK
             # Apply manual override if active, bypassing current gait state
@@ -104,13 +139,6 @@ class CoreSimulation:
             safe_torques = self.safety.check_and_clamp_torques(
                 raw_command_torques, current_positions=state.joint_positions
             )
-            
-            if self.safety.is_estopped():
-                self.backend.emergency_stop()
-                self.logger.critical("E-STOP active. Halting loop and dumping crash data.")
-                self.recorder.dump_to_disk("crash_report.npz")
-                self.stop()
-                break
             
             # 5. ACT
             self.backend.send_commands(safe_torques)

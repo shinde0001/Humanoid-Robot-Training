@@ -25,6 +25,7 @@ const simTimeEl = document.getElementById('sim-time');
 const gaitStateEl = document.getElementById('gait-state');
 const btnEstop = document.getElementById('btn-estop');
 const warningBanner = document.getElementById('estop-warning');
+const btnResetEstop = document.getElementById('btn-reset-estop');
 const pendingCmdText = document.getElementById('pending-cmd-text');
 const btnApprove = document.getElementById('btn-approve');
 const btnReject = document.getElementById('btn-reject');
@@ -185,6 +186,13 @@ window.sendOverride = function(type, vx=0, vy=0, vyaw=0) {
 
 // Event Listeners for System Controls
 btnEstop.addEventListener('click', () => postData('/override', {type: 'estop'}));
+if (btnResetEstop) {
+    btnResetEstop.addEventListener('click', () => {
+        activeKeys.clear();
+        updateDpadVisuals();
+        postData('/reset_estop');
+    });
+}
 btnApprove.addEventListener('click', () => postData('/approve'));
 btnReject.addEventListener('click', () => postData('/reject'));
 btnClearOverride.addEventListener('click', () => {

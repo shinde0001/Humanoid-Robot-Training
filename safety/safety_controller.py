@@ -57,5 +57,10 @@ class SafetyController:
             self.logger.error(f"E-STOP TRIGGERED! Reason: {reason}")
             self.estop_active = True
             
+    def reset_estop(self):
+        if self.estop_active:
+            self.logger.warning("E-STOP RELEASED. System safety restored.")
+            self.estop_active = False
+            
     def is_estopped(self) -> bool:
         return self.estop_active

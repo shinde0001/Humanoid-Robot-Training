@@ -56,6 +56,13 @@ def clear_override():
         sim_instance.manual_override.clear_override()
     return {"status": "override_cleared"}
 
+@app.post("/api/reset_estop")
+@app.post("/api/release_estop")
+def reset_estop():
+    if sim_instance:
+        sim_instance.reset_estop()
+    return {"status": "estop_released"}
+
 @app.websocket("/ws/telemetry")
 async def websocket_telemetry(websocket: WebSocket):
     await websocket.accept()
