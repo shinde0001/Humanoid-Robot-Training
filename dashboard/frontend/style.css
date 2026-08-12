@@ -331,7 +331,14 @@ h3 { font-size: 1rem; color: var(--text-muted); margin-bottom: 15px; letter-spac
     border-radius: 8px;
     font-weight: bold; font-family: var(--font-heading);
     cursor: pointer;
-    transition: 0.2s;
+    transition: 0.15s;
+    user-select: none;
 }
-.d-btn:hover { background: var(--neon-cyan); color: var(--bg-dark); }
+.d-btn:hover { background: var(--neon-cyan); color: var(--bg-dark); box-shadow: 0 0 10px var(--neon-cyan); }
+.d-btn.active {
+    background: var(--neon-cyan) !important;
+    color: var(--bg-dark) !important;
+    box-shadow: 0 0 18px var(--neon-cyan) !important;
+    transform: scale(0.92);
+}
 .up { grid-area: up; } .left { grid-area: left; } .down { grid-area: down; } .right { grid-area: right; }

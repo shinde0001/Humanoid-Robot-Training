@@ -115,6 +115,16 @@ class CoreSimulation:
             # 5. ACT
             self.backend.send_commands(safe_torques)
             
+            # Forward navigation velocities and target height to backend
+            if hasattr(self.backend, "set_navigation_targets"):
+                self.backend.set_navigation_targets(
+                    mode=self.gait_engine.current_state,
+                    vx=self.gait_engine.walk_speed_x,
+                    vy=self.gait_engine.walk_speed_y,
+                    vyaw=self.gait_engine.walk_speed_yaw,
+                    target_height=self.gait_engine.target_height
+                )
+            
             # 7. RECORD DATA
             self.recorder.record_tick(state)
             

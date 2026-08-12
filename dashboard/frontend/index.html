@@ -88,16 +88,16 @@
                 </div>
 
                 <div class="manual-module">
-                    <h3>MANUAL OVERRIDE</h3>
+                    <h3>MANUAL OVERRIDE (WASD / D-PAD)</h3>
                     <div class="d-pad">
-                        <button class="d-btn up" onclick="sendOverride('walk', 0.5, 0, 0)">W</button>
-                        <button class="d-btn left" onclick="sendOverride('walk', 0, 0.5, 0)">A</button>
-                        <button class="d-btn down" onclick="sendOverride('walk', -0.5, 0, 0)">S</button>
-                        <button class="d-btn right" onclick="sendOverride('walk', 0, -0.5, 0)">D</button>
+                        <button class="d-btn up" id="dpad-w" title="Walk Forward (W / ↑)">W</button>
+                        <button class="d-btn left" id="dpad-a" title="Turn Left (A / ←)">A</button>
+                        <button class="d-btn down" id="dpad-s" title="Walk Backward (S / ↓)">S</button>
+                        <button class="d-btn right" id="dpad-d" title="Turn Right (D / →)">D</button>
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-outline-cyan" onclick="sendOverride('stand',0,0,0)">STAND</button>
-                        <button class="btn btn-outline-cyan" onclick="sendOverride('crouch',0,0,0)">CROUCH</button>
+                        <button id="btn-stand" class="btn btn-outline-cyan" title="Stand Up (Space)">STAND</button>
+                        <button id="btn-crouch" class="btn btn-outline-cyan" title="Crouch Pose (C)">CROUCH</button>
                     </div>
                     <button id="btn-clear-override" class="btn btn-outline-orange mt-2 hidden">CLEAR OVERRIDE</button>
                 </div>

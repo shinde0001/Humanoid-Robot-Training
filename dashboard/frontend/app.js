@@ -128,6 +128,43 @@ function connectWebSockets() {
     };
 }
 
+// UI Button Elements
+const dpadW = document.getElementById('dpad-w');
+const dpadA = document.getElementById('dpad-a');
+const dpadS = document.getElementById('dpad-s');
+const dpadD = document.getElementById('dpad-d');
+const btnStand = document.getElementById('btn-stand');
+const btnCrouch = document.getElementById('btn-crouch');
+
+// Active key / pointer state tracking
+const activeKeys = new Set();
+
+function updateDpadVisuals() {
+    if (dpadW) dpadW.classList.toggle('active', activeKeys.has('w'));
+    if (dpadA) dpadA.classList.toggle('active', activeKeys.has('a'));
+    if (dpadS) dpadS.classList.toggle('active', activeKeys.has('s'));
+    if (dpadD) dpadD.classList.toggle('active', activeKeys.has('d'));
+}
+
+function processNavigationCommand() {
+    updateDpadVisuals();
+    
+    let vx = 0.0;
+    let vy = 0.0;
+    let vyaw = 0.0;
+    
+    if (activeKeys.has('w')) vx += 0.6;
+    if (activeKeys.has('s')) vx -= 0.5;
+    if (activeKeys.has('a')) vyaw += 1.0;  // Turn left
+    if (activeKeys.has('d')) vyaw -= 1.0;  // Turn right
+    
+    if (vx !== 0.0 || vyaw !== 0.0 || vy !== 0.0) {
+        sendOverride('walk', vx, vy, vyaw);
+    } else if (activeKeys.size === 0) {
+        sendOverride('stand', 0, 0, 0);
+    }
+}
+
 // REST Actions
 async function postData(endpoint, data={}) {
     try {
@@ -141,31 +178,112 @@ async function postData(endpoint, data={}) {
     }
 }
 
-// Event Listeners
-btnEstop.addEventListener('click', () => postData('/override', {type: 'estop'}));
-btnApprove.addEventListener('click', () => postData('/approve'));
-btnReject.addEventListener('click', () => postData('/reject'));
-btnClearOverride.addEventListener('click', () => postData('/clear_override'));
-
-window.sendOverride = function(type, vx, vy, vyaw) {
+// Global Manual Override Dispatcher
+window.sendOverride = function(type, vx=0, vy=0, vyaw=0) {
     postData('/override', {type: type, v_x: vx, v_y: vy, v_yaw: vyaw});
 };
 
-// Keyboard binding for WASD manual override
+// Event Listeners for System Controls
+btnEstop.addEventListener('click', () => postData('/override', {type: 'estop'}));
+btnApprove.addEventListener('click', () => postData('/approve'));
+btnReject.addEventListener('click', () => postData('/reject'));
+btnClearOverride.addEventListener('click', () => {
+    activeKeys.clear();
+    updateDpadVisuals();
+    postData('/clear_override');
+});
+
+// Setup D-pad on-screen buttons
+function setupDpadButton(buttonEl, keyName) {
+    if (!buttonEl) return;
+    
+    const press = (e) => {
+        e.preventDefault();
+        activeKeys.add(keyName);
+        processNavigationCommand();
+    };
+    
+    const release = (e) => {
+        e.preventDefault();
+        activeKeys.delete(keyName);
+        processNavigationCommand();
+    };
+    
+    buttonEl.addEventListener('pointerdown', press);
+    buttonEl.addEventListener('pointerup', release);
+    buttonEl.addEventListener('pointerleave', release);
+    buttonEl.addEventListener('pointercancel', release);
+}
+
+setupDpadButton(dpadW, 'w');
+setupDpadButton(dpadA, 'a');
+setupDpadButton(dpadS, 's');
+setupDpadButton(dpadD, 'd');
+
+if (btnStand) {
+    btnStand.addEventListener('click', () => {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('stand', 0, 0, 0);
+    });
+}
+
+if (btnCrouch) {
+    btnCrouch.addEventListener('click', () => {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('crouch', 0, 0, 0);
+    });
+}
+
+// Keyboard binding for WASD / Arrow keys manual override
 document.addEventListener('keydown', (e) => {
-    if(e.repeat) return; // Prevent spamming
-    const speed = 0.5;
-    if(e.key.toLowerCase() === 'w') sendOverride('walk', speed, 0, 0);
-    if(e.key.toLowerCase() === 's') sendOverride('walk', -speed, 0, 0);
-    if(e.key.toLowerCase() === 'a') sendOverride('walk', 0, speed, 0);
-    if(e.key.toLowerCase() === 'd') sendOverride('walk', 0, -speed, 0);
+    if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+    
+    const key = e.key.toLowerCase();
+    
+    if (key === 'w' || key === 'arrowup') {
+        if (!activeKeys.has('w')) {
+            activeKeys.add('w');
+            processNavigationCommand();
+        }
+    } else if (key === 's' || key === 'arrowdown') {
+        if (!activeKeys.has('s')) {
+            activeKeys.add('s');
+            processNavigationCommand();
+        }
+    } else if (key === 'a' || key === 'arrowleft') {
+        if (!activeKeys.has('a')) {
+            activeKeys.add('a');
+            processNavigationCommand();
+        }
+    } else if (key === 'd' || key === 'arrowright') {
+        if (!activeKeys.has('d')) {
+            activeKeys.add('d');
+            processNavigationCommand();
+        }
+    } else if (key === 'c') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('crouch', 0, 0, 0);
+    } else if (key === ' ' || key === 'escape') {
+        activeKeys.clear();
+        updateDpadVisuals();
+        sendOverride('stand', 0, 0, 0);
+    }
 });
 
 document.addEventListener('keyup', (e) => {
-    const k = e.key.toLowerCase();
-    if(['w','a','s','d'].includes(k)) {
-        // Simple release -> stand. For multi-key tracking, we'd need more complex logic.
-        sendOverride('stand', 0, 0, 0);
+    const key = e.key.toLowerCase();
+    let changed = false;
+    
+    if (key === 'w' || key === 'arrowup') { activeKeys.delete('w'); changed = true; }
+    if (key === 's' || key === 'arrowdown') { activeKeys.delete('s'); changed = true; }
+    if (key === 'a' || key === 'arrowleft') { activeKeys.delete('a'); changed = true; }
+    if (key === 'd' || key === 'arrowright') { activeKeys.delete('d'); changed = true; }
+    
+    if (changed) {
+        processNavigationCommand();
     }
 });
 

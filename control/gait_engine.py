@@ -19,14 +19,28 @@ class GaitEngine:
         # Walking parameters
         self.walk_speed_x = 0.0
         self.walk_speed_y = 0.0
+        self.walk_speed_yaw = 0.0
+        self.target_height = 0.98
         self.step_frequency = 1.5 # Hz
         self.step_height = 0.15 # rad amplitude
         
     def set_command(self, cmd_type: str, params: dict):
         self.current_state = cmd_type
         if cmd_type == 'walk':
-            self.walk_speed_x = params.get('v_x', 0.0)
-            self.walk_speed_y = params.get('v_y', 0.0)
+            self.walk_speed_x = float(params.get('v_x', 0.0))
+            self.walk_speed_y = float(params.get('v_y', 0.0))
+            self.walk_speed_yaw = float(params.get('v_yaw', 0.0))
+            self.target_height = 0.98
+        elif cmd_type == 'crouch':
+            self.walk_speed_x = 0.0
+            self.walk_speed_y = 0.0
+            self.walk_speed_yaw = 0.0
+            self.target_height = 0.78
+        elif cmd_type == 'stand':
+            self.walk_speed_x = 0.0
+            self.walk_speed_y = 0.0
+            self.walk_speed_yaw = 0.0
+            self.target_height = 0.98
             
     def update(self) -> tuple[np.ndarray, np.ndarray]:
         """Returns (target_positions, target_velocities)"""
