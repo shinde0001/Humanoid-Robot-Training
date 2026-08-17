@@ -4,7 +4,8 @@ import time
 from safety.limits import NUM_JOINTS, JOINT_NAMES
 from safety.safe_poses import (
     STAND_POSE, CROUCH_POSE, ZERO_POSE, VICTORY_POSE,
-    FIGHT_POSE, LOOK_LEFT_POSE, LOOK_RIGHT_POSE, BOW_POSE
+    STAND_POSE, CROUCH_POSE, ZERO_POSE, VICTORY_POSE,
+    FIGHT_POSE, LOOK_LEFT_POSE, LOOK_RIGHT_POSE
 )
 
 class GaitEngine:
@@ -13,7 +14,7 @@ class GaitEngine:
         self.time_elapsed = 0.0
         self.action_time = 0.0
         
-        # State: 'stand', 'crouch', 'walk', 'jump', 'wave', 'punch', 'victory', 'fight', 'look_left', 'look_right', 'scan', 'bow', 'zero'
+        # State: 'stand', 'crouch', 'walk', 'jump', 'wave', 'punch', 'victory', 'fight', 'look_left', 'look_right', 'scan', 'namaste', 'zero'
         self.current_state = 'stand'
         
         # Target kinematic state
@@ -25,6 +26,7 @@ class GaitEngine:
         self.walk_speed_y = 0.0
         self.walk_speed_yaw = 0.0
         self.target_height = 0.98
+        self.target_pitch = 0.0
         self.step_frequency = 1.5 # Hz
         self.step_height = 0.15 # rad amplitude
         
@@ -40,21 +42,27 @@ class GaitEngine:
             self.walk_speed_y = float(params.get('v_y', 0.0))
             self.walk_speed_yaw = float(params.get('v_yaw', 0.0))
             self.target_height = 0.98
+            self.target_pitch = 0.0
         elif cmd_type == 'crouch':
             self.walk_speed_x = 0.0
             self.walk_speed_y = 0.0
             self.walk_speed_yaw = 0.0
             self.target_height = 0.78
+            self.target_pitch = 0.0
         elif cmd_type == 'stand':
             self.walk_speed_x = 0.0
             self.walk_speed_y = 0.0
             self.walk_speed_yaw = 0.0
             self.target_height = 0.98
-        elif cmd_type in ['wave', 'punch', 'victory', 'fight', 'look_left', 'look_right', 'scan', 'bow']:
+            self.target_pitch = 0.0
+        elif cmd_type in ['wave', 'punch', 'victory', 'fight', 'look_left', 'look_right', 'scan', 'namaste']:
             self.walk_speed_x = 0.0
             self.walk_speed_y = 0.0
             self.walk_speed_yaw = 0.0
             self.target_height = 0.98
+            if cmd_type not in ['namaste']:
+                self.target_pitch = 0.0
+
             
     def update(self) -> tuple[np.ndarray, np.ndarray]:
         """Returns (target_positions, target_velocities)"""
@@ -79,45 +87,50 @@ class GaitEngine:
         elif self.current_state == 'jump':
             pos = STAND_POSE.copy()
             if self.action_time < 0.35:
-                # Phase 1: Deep crouch prep & arm windup
+                # Phase 1: Symmetric crouch prep
                 pos[JOINT_NAMES.index('left_hip_pitch')] = -0.7
                 pos[JOINT_NAMES.index('left_knee')] = 1.3
                 pos[JOINT_NAMES.index('left_ankle')] = -0.6
                 pos[JOINT_NAMES.index('right_hip_pitch')] = -0.7
                 pos[JOINT_NAMES.index('right_knee')] = 1.3
                 pos[JOINT_NAMES.index('right_ankle')] = -0.6
-                pos[JOINT_NAMES.index('left_shoulder_pitch')] = 0.4
-                pos[JOINT_NAMES.index('right_shoulder_pitch')] = 0.4
+                pos[JOINT_NAMES.index('left_shoulder_pitch')] = 0.3
+                pos[JOINT_NAMES.index('right_shoulder_pitch')] = 0.3
                 self.target_height = 0.70
+                self.target_pitch = 0.0  # Zero pitch prevents backward thrust
             elif self.action_time < 0.70:
-                # Phase 2: Explosive upward launch & arm thrust
-                pos[JOINT_NAMES.index('left_hip_pitch')] = -0.1
-                pos[JOINT_NAMES.index('left_knee')] = 0.2
-                pos[JOINT_NAMES.index('left_ankle')] = -0.1
-                pos[JOINT_NAMES.index('right_hip_pitch')] = -0.1
-                pos[JOINT_NAMES.index('right_knee')] = 0.2
-                pos[JOINT_NAMES.index('right_ankle')] = -0.1
-                pos[JOINT_NAMES.index('left_shoulder_pitch')] = -1.2
-                pos[JOINT_NAMES.index('right_shoulder_pitch')] = -1.2
-                self.target_height = 1.35
-            elif self.action_time < 1.20:
-                # Phase 3: Airborne flight tuck
-                pos[JOINT_NAMES.index('left_hip_pitch')] = -0.3
-                pos[JOINT_NAMES.index('left_knee')] = 0.6
-                pos[JOINT_NAMES.index('right_hip_pitch')] = -0.3
-                pos[JOINT_NAMES.index('right_knee')] = 0.6
-                self.target_height = 1.20
-            elif self.action_time < 1.60:
-                # Phase 4: Soft landing absorption
+                # Phase 2: Vertical explosive thrust
+                pos[JOINT_NAMES.index('left_hip_pitch')] = -0.15
+                pos[JOINT_NAMES.index('left_knee')] = 0.3
+                pos[JOINT_NAMES.index('left_ankle')] = -0.15
+                pos[JOINT_NAMES.index('right_hip_pitch')] = -0.15
+                pos[JOINT_NAMES.index('right_knee')] = 0.3
+                pos[JOINT_NAMES.index('right_ankle')] = -0.15
+                pos[JOINT_NAMES.index('left_shoulder_pitch')] = -0.8
+                pos[JOINT_NAMES.index('right_shoulder_pitch')] = -0.8
+                self.target_height = 1.30
+                self.target_pitch = 0.0
+            elif self.action_time < 1.15:
+                # Phase 3: Flight tuck
+                pos[JOINT_NAMES.index('left_hip_pitch')] = -0.35
+                pos[JOINT_NAMES.index('left_knee')] = 0.7
+                pos[JOINT_NAMES.index('right_hip_pitch')] = -0.35
+                pos[JOINT_NAMES.index('right_knee')] = 0.7
+                self.target_height = 1.15
+                self.target_pitch = 0.0
+            elif self.action_time < 1.55:
+                # Phase 4: Soft landing cushion
                 pos[JOINT_NAMES.index('left_hip_pitch')] = -0.5
                 pos[JOINT_NAMES.index('left_knee')] = 1.0
                 pos[JOINT_NAMES.index('right_hip_pitch')] = -0.5
                 pos[JOINT_NAMES.index('right_knee')] = 1.0
                 self.target_height = 0.90
+                self.target_pitch = 0.0
             else:
                 # Phase 5: Settle back to stand
                 pos = STAND_POSE.copy()
                 self.target_height = 0.98
+                self.target_pitch = 0.0
                 self.current_state = 'stand'
             self.target_positions = pos
             self.target_velocities = np.zeros(NUM_JOINTS)
@@ -183,36 +196,66 @@ class GaitEngine:
             self.target_positions = pos
             self.target_velocities = np.zeros(NUM_JOINTS)
             self.target_height = 0.98
-            
-        elif self.current_state == 'bow':
+
+        elif self.current_state == 'namaste':
             pos = STAND_POSE.copy()
-            if self.action_time < 0.6:
-                # Bowing down
-                frac = self.action_time / 0.6
-                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.4 - 0.4 * frac
-                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.4 - 0.4 * frac
-                pos[JOINT_NAMES.index("left_knee")] = 0.8 - 0.3 * frac
-                pos[JOINT_NAMES.index("right_knee")] = 0.8 - 0.3 * frac
-                self.target_height = 0.98 - 0.08 * frac
-            elif self.action_time < 1.4:
-                # Holding bow
-                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.8
-                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.8
-                pos[JOINT_NAMES.index("left_knee")] = 0.5
-                pos[JOINT_NAMES.index("right_knee")] = 0.5
-                self.target_height = 0.90
-            elif self.action_time < 2.0:
-                # Rising back up
-                frac = (self.action_time - 1.4) / 0.6
-                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.8 + 0.4 * frac
-                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.8 + 0.4 * frac
-                pos[JOINT_NAMES.index("left_knee")] = 0.5 + 0.3 * frac
-                pos[JOINT_NAMES.index("right_knee")] = 0.5 + 0.3 * frac
-                self.target_height = 0.90 + 0.08 * frac
+            if self.action_time < 0.7:
+                # Smooth graceful bow incline and hands folding
+                frac = self.action_time / 0.7
+                self.target_pitch = 0.2 * frac
+                self.target_height = 0.98 - 0.03 * frac
+                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.40 - 0.2 * frac
+                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.40 - 0.2 * frac
+                pos[JOINT_NAMES.index("left_knee")] = 0.80 + 0.05 * frac
+                pos[JOINT_NAMES.index("right_knee")] = 0.80 + 0.05 * frac
+                # Fold hands
+                pos[JOINT_NAMES.index("left_shoulder_roll")] = 0.0 - 0.2 * frac
+                pos[JOINT_NAMES.index("right_shoulder_roll")] = 0.0 + 0.2 * frac
+                pos[JOINT_NAMES.index("left_shoulder_pitch")] = 0.0 - 0.4 * frac
+                pos[JOINT_NAMES.index("right_shoulder_pitch")] = 0.0 - 0.4 * frac
+                pos[JOINT_NAMES.index("left_elbow")] = 0.10 + 1.4 * frac
+                pos[JOINT_NAMES.index("right_elbow")] = 0.10 + 1.4 * frac
+                pos[JOINT_NAMES.index("left_shoulder_yaw")] = 0.0 - 0.5 * frac
+                pos[JOINT_NAMES.index("right_shoulder_yaw")] = 0.0 + 0.5 * frac
+            elif self.action_time < 1.5:
+                # Respectful hold
+                self.target_pitch = 0.2
+                self.target_height = 0.95
+                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.60
+                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.60
+                pos[JOINT_NAMES.index("left_knee")] = 0.85
+                pos[JOINT_NAMES.index("right_knee")] = 0.85
+                pos[JOINT_NAMES.index("left_shoulder_roll")] = -0.2
+                pos[JOINT_NAMES.index("right_shoulder_roll")] = 0.2
+                pos[JOINT_NAMES.index("left_shoulder_pitch")] = -0.4
+                pos[JOINT_NAMES.index("right_shoulder_pitch")] = -0.4
+                pos[JOINT_NAMES.index("left_elbow")] = 1.5
+                pos[JOINT_NAMES.index("right_elbow")] = 1.5
+                pos[JOINT_NAMES.index("left_shoulder_yaw")] = -0.5
+                pos[JOINT_NAMES.index("right_shoulder_yaw")] = 0.5
+            elif self.action_time < 2.2:
+                # Smooth rise back to upright
+                frac = (self.action_time - 1.5) / 0.7
+                self.target_pitch = 0.2 * (1.0 - frac)
+                self.target_height = 0.95 + 0.03 * frac
+                pos[JOINT_NAMES.index("left_hip_pitch")] = -0.60 + 0.2 * frac
+                pos[JOINT_NAMES.index("right_hip_pitch")] = -0.60 + 0.2 * frac
+                pos[JOINT_NAMES.index("left_knee")] = 0.85 - 0.05 * frac
+                pos[JOINT_NAMES.index("right_knee")] = 0.85 - 0.05 * frac
+                
+                pos[JOINT_NAMES.index("left_shoulder_roll")] = -0.2 * (1.0 - frac)
+                pos[JOINT_NAMES.index("right_shoulder_roll")] = 0.2 * (1.0 - frac)
+                pos[JOINT_NAMES.index("left_shoulder_pitch")] = -0.4 * (1.0 - frac)
+                pos[JOINT_NAMES.index("right_shoulder_pitch")] = -0.4 * (1.0 - frac)
+                pos[JOINT_NAMES.index("left_elbow")] = 0.10 + 1.4 * (1.0 - frac)
+                pos[JOINT_NAMES.index("right_elbow")] = 0.10 + 1.4 * (1.0 - frac)
+                pos[JOINT_NAMES.index("left_shoulder_yaw")] = -0.5 * (1.0 - frac)
+                pos[JOINT_NAMES.index("right_shoulder_yaw")] = 0.5 * (1.0 - frac)
             else:
                 # Settle back to stand
                 pos = STAND_POSE.copy()
                 self.target_height = 0.98
+                self.target_pitch = 0.0
                 self.current_state = 'stand'
             self.target_positions = pos
             self.target_velocities = np.zeros(NUM_JOINTS)

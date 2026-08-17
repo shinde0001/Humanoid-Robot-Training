@@ -23,7 +23,7 @@ class CommandParser:
             VALID_COMMANDS = {
                 'stand', 'walk', 'crouch', 'jump', 'wave', 'punch', 
                 'victory', 'fight', 'look_left', 'look_right', 'scan', 
-                'bow', 'estop', 'zero'
+                'namaste', 'estop', 'zero'
             }
             if cmd_type not in VALID_COMMANDS:
                 self.logger.warning(f"Unknown command type: {cmd_type}")

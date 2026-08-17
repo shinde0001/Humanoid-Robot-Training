@@ -45,6 +45,14 @@ def test_control_and_commands():
     print("Stepping 100 times in crouch mode...")
     sim.step_loop(num_steps=100)
     
+    # 4. Test Namaste Command
+    cmd_namaste = json.dumps({"type": "namaste"})
+    sim.propose_command_string(cmd_namaste)
+    sim.approve_pending_command()
+    
+    print("Stepping 450 times in namaste mode...")
+    sim.step_loop(num_steps=450)
+    
     # Check final state
     state = backend.get_state()
     print(f"Final Sim Time: {state.timestamp:.3f}s")
@@ -55,3 +63,4 @@ def test_control_and_commands():
 
 if __name__ == "__main__":
     test_control_and_commands()
+

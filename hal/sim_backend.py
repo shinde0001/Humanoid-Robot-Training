@@ -13,7 +13,9 @@ class SimBackend(RobotBackend):
         self.nav_vy = 0.0
         self.nav_vyaw = 0.0
         self.target_height = 0.98
+        self.target_pitch = 0.0
         self.current_mode = "stand"
+        self.chase_cam = None
         
     def initialize(self, config: dict) -> None:
         model_path = config.get("model_path", "models/parth_humanoid/scene.xml")
@@ -28,13 +30,15 @@ class SimBackend(RobotBackend):
         self.model.opt.timestep = config.get("timestep", 0.005) # 200Hz
         mujoco.mj_forward(self.model, self.data)
         
-    def set_navigation_targets(self, mode: str, vx: float, vy: float, vyaw: float, target_height: float = 0.98) -> None:
-        """Update navigation velocity and target height from control/gait engine"""
+    def set_navigation_targets(self, mode: str, vx: float, vy: float, vyaw: float, target_height: float = 0.98, target_pitch: float = 0.0) -> None:
+        """Update navigation velocity, target height, and target pitch from control/gait engine"""
         self.current_mode = mode
         self.nav_vx = vx
         self.nav_vy = vy
         self.nav_vyaw = vyaw
         self.target_height = target_height
+        self.target_pitch = target_pitch
+
         
     def get_state(self) -> RobotState:
         # Extract IMU orientation from floating base pelvis quat [w, x, y, z]
@@ -68,7 +72,18 @@ class SimBackend(RobotBackend):
             self.renderer = mujoco.Renderer(self.model, height, width)
         
         try:
-            self.renderer.update_scene(self.data, camera="cinematic")
+            if eye == "cinematic":
+                if self.chase_cam is None:
+                    pelvis_id = self.model.body("pelvis").id
+                    self.chase_cam = mujoco.MjvCamera()
+                    self.chase_cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
+                    self.chase_cam.trackbodyid = pelvis_id
+                    self.chase_cam.distance = 2.8
+                    self.chase_cam.elevation = -12.0
+                    self.chase_cam.azimuth = 135.0
+                self.renderer.update_scene(self.data, camera=self.chase_cam)
+            else:
+                self.renderer.update_scene(self.data, camera=eye)
         except Exception:
             self.renderer.update_scene(self.data)
         return self.renderer.render()
@@ -92,7 +107,7 @@ class SimBackend(RobotBackend):
         
         # 4. Upright tilt errors in world frame (cross-product of body Z with global Z)
         roll_err = R[1, 2]
-        pitch_err = -R[0, 2]
+        pitch_err = self.target_pitch - R[0, 2]
         err_rot = np.array([roll_err, pitch_err, yaw_err])
         
         # 5. Transform angular velocity from body frame to world frame
@@ -129,6 +144,7 @@ class SimBackend(RobotBackend):
         self.nav_vx = 0.0
         self.nav_vy = 0.0
         self.nav_vyaw = 0.0
+        self.target_pitch = 0.0
         pelvis_id = self.model.body("pelvis").id
         self.data.xfrc_applied[pelvis_id, :] = 0.0
 
@@ -144,10 +160,12 @@ class SimBackend(RobotBackend):
             self.nav_vy = 0.0
             self.nav_vyaw = 0.0
             self.target_height = 0.98
+            self.target_pitch = 0.0
             self.current_mode = "stand"
             pelvis_id = self.model.body("pelvis").id
             self.data.xfrc_applied[pelvis_id, :] = 0.0
             mujoco.mj_forward(self.model, self.data)
+
 
     def shutdown(self) -> None:
         if self.renderer:

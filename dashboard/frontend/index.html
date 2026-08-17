@@ -3,40 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. | PARTH Telemetry</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>PARTH ROBOTICS | HUMANOID TELEMETRY & MOTOR DIAGNOSTICS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=pro_aerospace_v10">
 </head>
 <body>
     <div class="overlay-grid"></div>
+    <div class="hologram-vignette"></div>
+
     <div class="container">
-        
-        <!-- HEADER -->
+        <!-- TOP TELEMETRY HUD HEADER -->
         <header class="dashboard-header">
-            <div class="brand">
-                <h1>J.A.R.V.I.S. <span>[PARTH]</span></h1>
-                <p>SIM-TO-REAL FLIGHT TELEMETRY SYSTEM</p>
+            <div class="brand-group">
+                <div class="brand-logo">
+                    <div class="power-core-icon"></div>
+                </div>
+                <div class="brand">
+                    <h1>PARTH HUMANOID <span>// CORE TELEMETRY</span></h1>
+                    <p>REAL-TIME MOTOR DIAGNOSTICS &amp; FLIGHT CONTROL</p>
+                </div>
             </div>
-            <div class="status-indicator">
-                <div class="pulse-dot" id="connection-dot"></div>
-                <span id="connection-text">CONNECTING...</span>
+
+            <!-- SYSTEM QUICK TELEMETRY STATS -->
+            <div class="header-telemetry">
+                <div class="header-stat">
+                    <span class="stat-label">MAIN BATTERY (PDU)</span>
+                    <span class="stat-value neon-amber" id="hdr-battery">48.0 V</span>
+                </div>
+                <div class="header-stat">
+                    <span class="stat-label">MOTORS ONLINE</span>
+                    <span class="stat-value neon-cyan" id="hdr-motors">19 / 19 OK</span>
+                </div>
+                <div class="header-stat">
+                    <span class="stat-label">IMU ORIENTATION</span>
+                    <span class="stat-value" id="hdr-imu">P: 0.0° | R: 0.0° | Y: 0.0°</span>
+                </div>
+                <div class="status-indicator" id="conn-indicator">
+                    <div class="pulse-dot" id="connection-dot"></div>
+                    <span id="connection-text">CONNECTING...</span>
+                </div>
             </div>
         </header>
 
-        <!-- MAIN CONTENT -->
+        <!-- MAIN 3-COLUMN DASHBOARD -->
         <main class="dashboard-grid">
             
-            <!-- LEFT COLUMN: VISION -->
+            <!-- LEFT COLUMN: OPTICAL VISION & SENSOR SUITE -->
+            <!-- LEFT COLUMN: SIMULATION & OPTICAL SENSOR SUITE -->
             <section class="panel glass-panel vision-panel">
                 <div class="panel-header">
-                    <h2>OPTICAL SENSOR ARRAY</h2>
-                    <span class="badge">ACTIVE</span>
+                    <h2><span class="hud-bracket">[</span> 3D SIMULATION &amp; CAM <span class="hud-bracket">]</span></h2>
+                    <span class="badge" id="vision-badge">DUAL FEED ACTIVE</span>
                 </div>
-                <div class="video-container">
-                    <img id="camera-feed" src="" alt="Awaiting Video Stream...">
+                
+                <!-- 1. LIVE 3D PHYSICS SIMULATION VIEW (CHASE CAM) -->
+                <div class="video-container" id="sim-video-container" style="position: relative; margin-bottom: 10px; flex: 1 1 240px; min-height: 200px;">
+                    <span id="sim-cam-label" style="position:absolute; top:8px; left:8px; font-size:11px; color:var(--neon-amber); z-index:10; background:rgba(0,0,0,0.75); padding:3px 8px; border:1px solid var(--neon-amber); border-radius:4px; font-family:var(--font-mono);">[ 3D SIMULATION // CHASE CAM ]</span>
+                    <img id="cinematic-feed" src="" alt="Awaiting 3D Simulation Stream..." style="display: block; width: 100%; height: 100%; object-fit: cover;">
+                    <div class="hud-corner top-left"></div>
+                    <div class="hud-corner top-right"></div>
+                    <div class="hud-corner bottom-left"></div>
+                    <div class="hud-corner bottom-right"></div>
+                </div>
+
+                <!-- 2. ROBOT ONBOARD HEAD STEREO CAMERA (EGOCENTRIC POV) -->
+                <div class="video-container" id="ego-video-container" style="position: relative; margin-bottom: 8px; flex: 1 1 200px; min-height: 180px;">
+                    <span id="ego-cam-label" style="position:absolute; top:8px; left:8px; font-size:11px; color:var(--neon-cyan); z-index:10; background:rgba(0,0,0,0.75); padding:3px 8px; border:1px solid var(--neon-cyan); border-radius:4px; font-family:var(--font-mono);">[ ROBOT VISION // EGOCENTRIC ]</span>
+                    <img id="camera-feed" src="" alt="Awaiting Robot Camera Stream..." style="display: block; width: 100%; height: 100%; object-fit: cover;">
                     <div class="crosshair"></div>
+                    <div class="hud-corner top-left"></div>
+                    <div class="hud-corner top-right"></div>
+                    <div class="hud-corner bottom-left"></div>
+                    <div class="hud-corner bottom-right"></div>
                     <div class="scanline"></div>
                 </div>
+
                 <div class="telemetry-readout">
                     <div class="readout-item">
                         <span class="label">SYS TIME</span>
@@ -44,49 +85,305 @@
                     </div>
                     <div class="readout-item">
                         <span class="label">GAIT STATE</span>
-                        <span class="value highlight" id="gait-state">UNKNOWN</span>
+                        <span class="value highlight" id="gait-state">STAND</span>
+                    </div>
+                    <div class="readout-item">
+                        <span class="label">THRUST / CONTACT</span>
+                        <span class="value" id="contact-status">504 N</span>
                     </div>
                 </div>
             </section>
 
-            <!-- CENTER COLUMN: DIAGNOSTICS -->
-            <section class="panel glass-panel diagnostics-panel">
+            <!-- CENTER COLUMN: HOLOGRAPHIC BLUEPRINT & MOTOR DIAGNOSTICS -->
+            <section class="panel glass-panel blueprint-panel">
                 <div class="panel-header">
-                    <h2>ACTUATOR DIAGNOSTICS</h2>
-                    <span class="badge">19 DOF</span>
+                    <h2><span class="hud-bracket">[</span> SCHEMATIC BLUEPRINT <span class="hud-bracket">]</span></h2>
+                    <div class="view-tabs">
+                        <button class="tab-btn active" id="tab-blueprint">BLUEPRINT</button>
+                        <button class="tab-btn" id="tab-matrix">MOTOR MATRIX</button>
+                        <button class="tab-btn" id="tab-bars">BARS</button>
+                    </div>
                 </div>
-                <div class="joints-container" id="joints-container">
-                    <!-- Joint bars will be injected here via JS -->
+
+                <!-- TAB 1: INTERACTIVE HOLOGRAPHIC BLUEPRINT -->
+                <div class="tab-content" id="content-blueprint">
+                    <div class="blueprint-controls">
+                        <button id="btn-run-diag" class="btn btn-diag">
+                            ⚡ RUN FULL MOTOR DIAGNOSTIC SWEEP
+                        </button>
+                        <span class="diag-status" id="diag-summary-text">ALL 19 ACTUATORS ARMED</span>
+                    </div>
+
+                    <div class="blueprint-canvas-container" id="blueprint-canvas-container">
+                        <!-- STATE-OF-THE-ART ROBOTIC HOLOGRAPHIC BLUEPRINT -->
+                        <svg id="hologram-svg" viewBox="0 0 1024 1024" class="blueprint-svg">
+                            <defs>
+                                <filter id="glow-cyan" x="-25%" y="-25%" width="150%" height="150%">
+                                    <feGaussianBlur stdDeviation="6" result="blur" />
+                                    <feMerge>
+                                        <feMergeNode in="blur" />
+                                        <feMergeNode in="blur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+                                <filter id="glow-amber" x="-25%" y="-25%" width="150%" height="150%">
+                                    <feGaussianBlur stdDeviation="8" result="blur" />
+                                    <feMerge>
+                                        <feMergeNode in="blur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+                            </defs>
+
+                            <!-- ============================================== -->
+                            <!-- PHOTOREALISTIC HOLOGRAPHIC CHASSIS RENDER -->
+                            <!-- ============================================== -->
+                            <image href="assets/robot_blueprint.png" x="0" y="0" width="1024" height="1024" opacity="0.9" />
+
+                            <!-- BACKGROUND HUD GRID & CALIPERS (Scaled to 1024x1024) -->
+                            <g class="blueprint-hud-layer" opacity="0.45">
+                                <ellipse cx="512" cy="1000" rx="400" ry="40" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5" stroke-dasharray="8 8" />
+                                <ellipse cx="512" cy="1000" rx="250" ry="25" fill="none" stroke="var(--neon-cyan)" stroke-width="1" />
+                                <line x1="80" y1="1000" x2="944" y2="1000" stroke="var(--neon-cyan)" stroke-width="1" stroke-dasharray="4 4" />
+
+                                <line x1="512" y1="30" x2="512" y2="1000" stroke="var(--neon-cyan)" stroke-width="1" stroke-dasharray="6 6" />
+                                <line x1="50" y1="512" x2="974" y2="512" stroke="var(--neon-cyan)" stroke-width="1" stroke-dasharray="6 6" />
+
+                                <text x="512" y="40" class="svg-hud-title" text-anchor="middle" font-size="16">PARTH-H1 // 19-DOF BIO-MIMETIC HUMANOID ARCHITECTURE</text>
+                                <text x="40" y="80" class="svg-hud-sub" font-size="14">SYS: ACTIVE [200Hz]</text>
+                                <text x="40" y="100" class="svg-hud-sub" font-size="14">SCALE: 1:1.0 [1.80M]</text>
+                                <text x="984" y="80" class="svg-hud-sub" text-anchor="end" font-size="14">MASS: 47.0 KG</text>
+                                <text x="984" y="100" class="svg-hud-sub" text-anchor="end" font-size="14">PWR: 48V / 1.2kWh</text>
+
+                                <!-- Dimension Calipers -->
+                                <line x1="950" y1="80" x2="950" y2="980" stroke="var(--neon-amber)" stroke-width="1.2" stroke-dasharray="4 4" />
+                                <line x1="940" y1="80" x2="960" y2="80" stroke="var(--neon-amber)" stroke-width="2" />
+                                <line x1="940" y1="980" x2="960" y2="980" stroke="var(--neon-amber)" stroke-width="2" />
+                                <text x="930" y="530" class="svg-caliper-text" text-anchor="end" transform="rotate(-90 930 530)" font-size="14">1.80 METERS (HEIGHT)</text>
+                            </g>
+
+                            <!-- ============================================== -->
+                            <!-- HOLOGRAPHIC ACTUATOR TELEMETRY NODES (19 MOTORS) -->
+                            <!-- ============================================== -->
+                            <g id="hologram-nodes">
+                                
+                                <!-- CENTRAL 48V PDU (CHEST POWER HUB) -->
+                                <g class="motor-node core-pdu" id="node-pdu" data-joint="pdu">
+                                    <circle cx="512" cy="300" r="40" class="hud-ring-outer rotating-cw" />
+                                    <circle cx="512" cy="300" r="30" class="hud-ring-inner rotating-ccw" />
+                                    <circle cx="512" cy="300" r="16" class="pdu-core-glow" />
+                                    <path d="M 552 300 L 630 300 L 650 320" class="callout-leader" />
+                                    <text x="512" y="240" class="node-tag-prominent" text-anchor="middle" font-size="16">MAIN PDU // 48V BMS</text>
+                                </g>
+
+                                <!-- HEAD / STEREO IMU SENSOR -->
+                                <g class="motor-node" id="node-head" data-joint="imu_head">
+                                    <circle cx="512" cy="95" r="26" class="hud-ring-outer" />
+                                    <circle cx="512" cy="95" r="8" class="node-dot" />
+                                    <text x="512" y="55" class="node-tag-prominent" text-anchor="middle" font-size="14">HEAD // STEREO IMU</text>
+                                </g>
+
+                                <!-- TORSO YAW ACTUATOR (Motor 10) -->
+                                <g class="motor-node" id="node-joint-10" data-joint="torso" data-id="10">
+                                    <circle cx="512" cy="460" r="22" class="hud-ring-outer" />
+                                    <circle cx="512" cy="460" r="8" class="node-dot" />
+                                    <text x="512" y="495" class="node-tag-prominent" text-anchor="middle" font-size="14">[10] TORSO YAW</text>
+                                </g>
+
+                                <!-- ================= RIGHT ARM JOINTS (Motors 15-18) (VIEWER LEFT) ================= -->
+                                <g class="motor-node" id="node-joint-15" data-joint="right_shoulder_pitch" data-id="15">
+                                    <circle cx="370" cy="240" r="18" class="hud-ring-outer" />
+                                    <circle cx="370" cy="240" r="6" class="node-dot" />
+                                    <path d="M 352 240 L 220 240" class="callout-leader" />
+                                    <text x="210" y="245" class="callout-text" text-anchor="end" font-size="14">[15] R_SHO_PITCH</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-16" data-joint="right_shoulder_roll" data-id="16">
+                                    <circle cx="370" cy="270" r="16" class="hud-ring-outer" />
+                                    <circle cx="370" cy="270" r="6" class="node-dot" />
+                                    <path d="M 354 270 L 220 270" class="callout-leader" />
+                                    <text x="210" y="275" class="callout-text" text-anchor="end" font-size="14">[16] R_SHO_ROLL</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-17" data-joint="right_shoulder_yaw" data-id="17">
+                                    <circle cx="360" cy="300" r="16" class="hud-ring-outer" />
+                                    <circle cx="360" cy="300" r="6" class="node-dot" />
+                                    <path d="M 344 300 L 220 300" class="callout-leader" />
+                                    <text x="210" y="305" class="callout-text" text-anchor="end" font-size="14">[17] R_SHO_YAW</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-18" data-joint="right_elbow" data-id="18">
+                                    <circle cx="340" cy="410" r="20" class="hud-ring-outer" />
+                                    <circle cx="340" cy="410" r="8" class="node-dot" />
+                                    <path d="M 320 410 L 200 410" class="callout-leader" />
+                                    <text x="190" y="415" class="callout-text" text-anchor="end" font-size="14">[18] R_ELBOW</text>
+                                </g>
+
+                                <!-- ================= LEFT ARM JOINTS (Motors 11-14) (VIEWER RIGHT) ================= -->
+                                <g class="motor-node" id="node-joint-11" data-joint="left_shoulder_pitch" data-id="11">
+                                    <circle cx="654" cy="240" r="18" class="hud-ring-outer" />
+                                    <circle cx="654" cy="240" r="6" class="node-dot" />
+                                    <path d="M 672 240 L 804 240" class="callout-leader" />
+                                    <text x="814" y="245" class="callout-text" font-size="14">[11] L_SHO_PITCH</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-12" data-joint="left_shoulder_roll" data-id="12">
+                                    <circle cx="654" cy="270" r="16" class="hud-ring-outer" />
+                                    <circle cx="654" cy="270" r="6" class="node-dot" />
+                                    <path d="M 670 270 L 804 270" class="callout-leader" />
+                                    <text x="814" y="275" class="callout-text" font-size="14">[12] L_SHO_ROLL</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-13" data-joint="left_shoulder_yaw" data-id="13">
+                                    <circle cx="664" cy="300" r="16" class="hud-ring-outer" />
+                                    <circle cx="664" cy="300" r="6" class="node-dot" />
+                                    <path d="M 680 300 L 804 300" class="callout-leader" />
+                                    <text x="814" y="305" class="callout-text" font-size="14">[13] L_SHO_YAW</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-14" data-joint="left_elbow" data-id="14">
+                                    <circle cx="684" cy="410" r="20" class="hud-ring-outer" />
+                                    <circle cx="684" cy="410" r="8" class="node-dot" />
+                                    <path d="M 704 410 L 824 410" class="callout-leader" />
+                                    <text x="834" y="415" class="callout-text" font-size="14">[14] L_ELBOW</text>
+                                </g>
+
+                                <!-- ================= RIGHT LEG JOINTS (Motors 5-9) (VIEWER LEFT) ================= -->
+                                <g class="motor-node" id="node-joint-5" data-joint="right_hip_yaw" data-id="5">
+                                    <circle cx="430" cy="520" r="18" class="hud-ring-outer" />
+                                    <circle cx="430" cy="520" r="6" class="node-dot" />
+                                    <path d="M 412 520 L 300 520 L 280 540" class="callout-leader" />
+                                    <text x="270" y="545" class="callout-text" text-anchor="end" font-size="14">[05] R_HIP_YAW</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-6" data-joint="right_hip_roll" data-id="6">
+                                    <circle cx="430" cy="550" r="18" class="hud-ring-outer" />
+                                    <circle cx="430" cy="550" r="6" class="node-dot" />
+                                    <path d="M 412 550 L 280 550 L 260 570" class="callout-leader" />
+                                    <text x="250" y="575" class="callout-text" text-anchor="end" font-size="14">[06] R_HIP_ROLL</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-7" data-joint="right_hip_pitch" data-id="7">
+                                    <circle cx="430" cy="580" r="18" class="hud-ring-outer" />
+                                    <circle cx="430" cy="580" r="6" class="node-dot" />
+                                    <path d="M 412 580 L 260 580 L 240 600" class="callout-leader" />
+                                    <text x="230" y="605" class="callout-text" text-anchor="end" font-size="14">[07] R_HIP_PITCH</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-8" data-joint="right_knee" data-id="8">
+                                    <circle cx="420" cy="720" r="24" class="hud-ring-outer" />
+                                    <circle cx="420" cy="720" r="8" class="node-dot" />
+                                    <path d="M 396 720 L 200 720" class="callout-leader" />
+                                    <text x="190" y="725" class="callout-text" text-anchor="end" font-size="14">[08] R_KNEE (300Nm)</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-9" data-joint="right_ankle" data-id="9">
+                                    <circle cx="415" cy="930" r="22" class="hud-ring-outer" />
+                                    <circle cx="415" cy="930" r="8" class="node-dot" />
+                                    <path d="M 393 930 L 200 930" class="callout-leader" />
+                                    <text x="190" y="935" class="callout-text" text-anchor="end" font-size="14">[09] R_ANKLE</text>
+                                </g>
+
+                                <!-- ================= LEFT LEG JOINTS (Motors 0-4) (VIEWER RIGHT) ================= -->
+                                <g class="motor-node" id="node-joint-0" data-joint="left_hip_yaw" data-id="0">
+                                    <circle cx="594" cy="520" r="18" class="hud-ring-outer" />
+                                    <circle cx="594" cy="520" r="6" class="node-dot" />
+                                    <path d="M 612 520 L 724 520 L 744 540" class="callout-leader" />
+                                    <text x="754" y="545" class="callout-text" font-size="14">[00] L_HIP_YAW</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-1" data-joint="left_hip_roll" data-id="1">
+                                    <circle cx="594" cy="550" r="18" class="hud-ring-outer" />
+                                    <circle cx="594" cy="550" r="6" class="node-dot" />
+                                    <path d="M 612 550 L 744 550 L 764 570" class="callout-leader" />
+                                    <text x="774" y="575" class="callout-text" font-size="14">[01] L_HIP_ROLL</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-2" data-joint="left_hip_pitch" data-id="2">
+                                    <circle cx="594" cy="580" r="18" class="hud-ring-outer" />
+                                    <circle cx="594" cy="580" r="6" class="node-dot" />
+                                    <path d="M 612 580 L 764 580 L 784 600" class="callout-leader" />
+                                    <text x="794" y="605" class="callout-text" font-size="14">[02] L_HIP_PITCH</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-3" data-joint="left_knee" data-id="3">
+                                    <circle cx="604" cy="720" r="24" class="hud-ring-outer" />
+                                    <circle cx="604" cy="720" r="8" class="node-dot" />
+                                    <path d="M 628 720 L 824 720" class="callout-leader" />
+                                    <text x="834" y="725" class="callout-text" font-size="14">[03] L_KNEE (300Nm)</text>
+                                </g>
+                                <g class="motor-node" id="node-joint-4" data-joint="left_ankle" data-id="4">
+                                    <circle cx="609" cy="930" r="22" class="hud-ring-outer" />
+                                    <circle cx="609" cy="930" r="8" class="node-dot" />
+                                    <path d="M 631 930 L 824 930" class="callout-leader" />
+                                    <text x="834" y="935" class="callout-text" font-size="14">[04] L_ANKLE</text>
+                                </g>
+
+                            </g> <!-- END HOLOGRAM NODES -->
+
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- TAB 2: FULL MOTOR HEALTH MATRIX -->
+                <div class="tab-content hidden" id="content-matrix">
+                    <div class="matrix-wrapper" id="matrix-container">
+                        <!-- Injected via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- TAB 3: ACTUATOR BARS -->
+                <div class="tab-content hidden" id="content-bars">
+                    <div class="joints-container" id="joints-container">
+                        <!-- Joint bars will be injected here via JS -->
+                    </div>
                 </div>
             </section>
 
-            <!-- RIGHT COLUMN: COMMAND & CONTROL -->
+            <!-- RIGHT COLUMN: COMMAND & TACTICAL CONTROL -->
             <section class="panel glass-panel control-panel">
                 <div class="panel-header danger-header">
-                    <h2>TACTICAL COMMAND</h2>
+                    <h2><span class="hud-bracket">[</span> TACTICAL COMMAND <span class="hud-bracket">]</span></h2>
+                    <span class="badge badge-safety">TIER 1 &amp; 2 ARMED</span>
                 </div>
                 
-                <div class="safety-module">
-                    <button id="btn-estop" class="btn btn-danger btn-massive">
-                        EMERGENCY STOP
-                    </button>
-                    <div id="estop-warning" class="warning-banner hidden">
-                        <div>SYSTEM IMMOBILIZED: E-STOP ACTIVE</div>
-                        <button id="btn-reset-estop" class="btn btn-success mt-2" style="width: 100%;">
-                            RELEASE E-STOP &amp; RECOVER
-                        </button>
+                <!-- SELECTED MOTOR QUICK INSPECTION CARD WITH EMBEDDED TACTICAL SWITCHES -->
+                <div class="motor-inspect-card" id="motor-inspect-card" style="margin-bottom: 16px;">
+                    <div class="card-header">
+                        <span class="inspect-title" id="inspect-name">CENTRAL PDU // 48V BATTERY &amp; BMS</span>
+                        <span class="inspect-badge" id="inspect-status">NOMINAL (100%)</span>
                     </div>
-                </div>
+                    <div class="inspect-grid">
+                        <div class="inspect-col">
+                            <span class="inspect-label">POSITION / ANGLE</span>
+                            <span class="inspect-val" id="inspect-angle">STABILIZED (9.81m/s²)</span>
+                        </div>
+                        <div class="inspect-col">
+                            <span class="inspect-label">MOTOR SPEED</span>
+                            <span class="inspect-val" id="inspect-speed">48.0 V / 12.4 A</span>
+                        </div>
+                        <div class="inspect-col">
+                            <span class="inspect-label">TORQUE OUTPUT</span>
+                            <span class="inspect-val" id="inspect-torque">504.6 N (WEIGHT EQUIL.)</span>
+                        </div>
+                        <div class="inspect-col">
+                            <span class="inspect-label">EST. TEMPERATURE</span>
+                            <span class="inspect-val" id="inspect-temp">34.2 °C</span>
+                        </div>
+                    </div>
+                    <div class="inspect-load-bar-wrap" style="margin-bottom: 12px;">
+                        <div class="inspect-load-label">TORQUE LOAD: <span id="inspect-load-pct">18.5%</span></div>
+                        <div class="inspect-load-bar">
+                            <div class="inspect-load-fill" id="inspect-load-fill"></div>
+                        </div>
+                    </div>
 
-                <div class="validation-module">
-                    <h3>VALIDATION GATE</h3>
-                    <div class="pending-command-box" id="pending-command-box">
-                        <span class="label">AWAITING AI PROPOSAL...</span>
-                        <span class="cmd-type" id="pending-cmd-text">NONE</span>
-                    </div>
-                    <div class="validation-actions">
-                        <button id="btn-approve" class="btn btn-success" disabled>APPROVE</button>
-                        <button id="btn-reject" class="btn btn-outline" disabled>REJECT</button>
+                    <!-- EMBEDDED E-STOP AND AI VALIDATION CONTROLS -->
+                    <div style="display: flex; gap: 8px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); align-items: center; justify-content: space-between;">
+                        <!-- E-STOP TOGGLE -->
+                        <div style="display: flex; flex-direction: column; width: 45%;">
+                            <button id="btn-estop" class="btn btn-danger btn-sm" style="font-size: 0.72rem; padding: 6px; border-radius: 3px; font-weight: bold; letter-spacing: 0.5px;">E-STOP [ KILL ]</button>
+                            <div id="estop-warning" class="hidden">
+                                <button id="btn-reset-estop" class="btn btn-success btn-sm" style="width: 100%; font-size: 0.65rem; padding: 6px; margin-top: 4px; border-radius: 3px;">RESET E-STOP</button>
+                            </div>
+                        </div>
+                        
+                        <!-- VALIDATION TOGGLE -->
+                        <div style="display: flex; flex-direction: column; width: 52%; border-left: 1px solid rgba(0,243,255,0.2); padding-left: 10px;" id="pending-command-box">
+                            <span style="font-size: 0.6rem; color: var(--text-muted); font-family: var(--font-mono); letter-spacing: 1px;">AI PROPOSAL:</span>
+                            <span id="pending-cmd-text" style="font-size: 0.82rem; color: var(--neon-orange); font-family: var(--font-heading); font-weight: bold; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">NONE</span>
+                            <div style="display: flex; gap: 4px;">
+                                <button id="btn-approve" class="btn btn-success btn-sm" style="flex: 1; padding: 4px 2px; font-size: 0.65rem;" disabled>✓ YES</button>
+                                <button id="btn-reject" class="btn btn-danger btn-sm" style="flex: 1; padding: 4px 2px; font-size: 0.65rem;" disabled>✗ NO</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -119,7 +416,7 @@
                         <button id="btn-look-left" class="btn btn-outline-cyan btn-sm" title="Look Left (Q)">LOOK L ◀</button>
                         <button id="btn-look-right" class="btn btn-outline-cyan btn-sm" title="Look Right (E)">LOOK R ▶</button>
                         <button id="btn-scan" class="btn btn-outline-cyan btn-sm" title="Radar Scan (R)">SCAN 🔄</button>
-                        <button id="btn-bow" class="btn btn-outline-cyan btn-sm" title="Respectful Bow (B)">BOW 🙇</button>
+                        <button id="btn-namaste" class="btn btn-outline-cyan btn-sm" title="Namaste Greeting (N)">NAMASTE 🙏</button>
                     </div>
 
                     <button id="btn-clear-override" class="btn btn-outline-orange mt-2 hidden">CLEAR OVERRIDE</button>

@@ -127,8 +127,8 @@ class CoreSimulation:
             # Determine target kinematic pose from GaitEngine
             target_pos, target_vel = self.gait_engine.update()
             
-            # Auto-clear one-shot overrides (jump, bow) once completed
-            if override and override.type in ['jump', 'bow'] and self.gait_engine.current_state == 'stand':
+            # Auto-clear one-shot overrides (jump, namaste) once completed
+            if override and override.type in ['jump', 'namaste'] and self.gait_engine.current_state == 'stand':
                 self.manual_override.clear_override()
             
             # Calculate torques via PD Control
@@ -147,15 +147,17 @@ class CoreSimulation:
             # 5. ACT
             self.backend.send_commands(safe_torques)
             
-            # Forward navigation velocities and target height to backend
+            # Forward navigation velocities, target height, and target pitch to backend
             if hasattr(self.backend, "set_navigation_targets"):
                 self.backend.set_navigation_targets(
                     mode=self.gait_engine.current_state,
                     vx=self.gait_engine.walk_speed_x,
                     vy=self.gait_engine.walk_speed_y,
                     vyaw=self.gait_engine.walk_speed_yaw,
-                    target_height=self.gait_engine.target_height
+                    target_height=self.gait_engine.target_height,
+                    target_pitch=getattr(self.gait_engine, "target_pitch", 0.0)
                 )
+
             
             # 7. RECORD DATA
             self.recorder.record_tick(state)

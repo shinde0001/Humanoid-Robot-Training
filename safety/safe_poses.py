@@ -51,9 +51,3 @@ LOOK_LEFT_POSE[JOINT_NAMES.index("torso")] = 1.0
 LOOK_RIGHT_POSE = STAND_POSE.copy()
 LOOK_RIGHT_POSE[JOINT_NAMES.index("torso")] = -1.0
 
-# Bow pose (respectful forward bow from waist)
-BOW_POSE = STAND_POSE.copy()
-BOW_POSE[JOINT_NAMES.index("left_hip_pitch")] = -0.8
-BOW_POSE[JOINT_NAMES.index("right_hip_pitch")] = -0.8
-BOW_POSE[JOINT_NAMES.index("left_knee")] = 0.5
-BOW_POSE[JOINT_NAMES.index("right_knee")] = 0.5
