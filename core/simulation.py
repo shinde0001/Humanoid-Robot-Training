@@ -1,5 +1,6 @@
 import time
 import logging
+import threading
 import numpy as np
 from safety.safety_controller import SafetyController
 from control.pid import PDController
@@ -15,6 +16,7 @@ class CoreSimulation:
         self.rate_hz = config.get("CONTROL_RATE_HZ", 200)
         self.dt = 1.0 / self.rate_hz
         self.running = False
+        self.lock = threading.Lock()
         
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger("SimulationCore")
@@ -68,13 +70,14 @@ class CoreSimulation:
 
     def reset_estop(self):
         """Called by Dashboard UI to release E-STOP and restore upright standing stance."""
-        self.safety.reset_estop()
-        self.manual_override.clear_override()
-        self.gait_engine.set_command('stand', {})
-        if hasattr(self.backend, "reset_to_home"):
-            self.backend.reset_to_home()
-        self._crash_dumped = False
-        self.logger.info("E-STOP released. Robot restored to safe standing stance.")
+        with self.lock:
+            self.safety.reset_estop()
+            self.manual_override.clear_override()
+            self.gait_engine.set_command('stand', {})
+            if hasattr(self.backend, "reset_to_home"):
+                self.backend.reset_to_home()
+            self._crash_dumped = False
+            self.logger.info("E-STOP released. Robot restored to safe standing stance.")
 
     def step_loop(self, num_steps=None):
         step_count = 0
@@ -85,7 +88,8 @@ class CoreSimulation:
             tick_start = time.perf_counter()
             
             # 1. READ
-            state = self.backend.get_state()
+            with self.lock:
+                state = self.backend.get_state()
             
             # 2. SAFETY CHECK (Tier 2)
             self.safety.check_state(state)
@@ -96,19 +100,20 @@ class CoreSimulation:
                 
             # Check E-STOP state
             if self.safety.is_estopped():
-                self.backend.emergency_stop()
-                if not self._crash_dumped:
-                    self.logger.critical("E-STOP active. Robot immobilized in safe holding mode.")
-                    self.recorder.dump_to_disk("crash_report.npz")
-                    self._crash_dumped = True
-                
-                # In batch test mode, exit loop
-                if num_steps is not None:
-                    self.stop()
-                    break
-                
-                # In live mode, step physics with zero torques and pace loop
-                self.backend.step()
+                with self.lock:
+                    self.backend.emergency_stop()
+                    if not self._crash_dumped:
+                        self.logger.critical("E-STOP active. Robot immobilized in safe holding mode.")
+                        self.recorder.dump_to_disk("crash_report.npz")
+                        self._crash_dumped = True
+                    
+                    # In batch test mode, exit loop
+                    if num_steps is not None:
+                        self.stop()
+                        break
+                    
+                    # In live mode, step physics with zero torques and pace loop
+                    self.backend.step()
                 elapsed = time.perf_counter() - tick_start
                 sleep_time = target_dt - elapsed
                 if sleep_time > 0.0005:
@@ -144,26 +149,26 @@ class CoreSimulation:
                 raw_command_torques, current_positions=state.joint_positions
             )
             
-            # 5. ACT
-            self.backend.send_commands(safe_torques)
-            
-            # Forward navigation velocities, target height, and target pitch to backend
-            if hasattr(self.backend, "set_navigation_targets"):
-                self.backend.set_navigation_targets(
-                    mode=self.gait_engine.current_state,
-                    vx=self.gait_engine.walk_speed_x,
-                    vy=self.gait_engine.walk_speed_y,
-                    vyaw=self.gait_engine.walk_speed_yaw,
-                    target_height=self.gait_engine.target_height,
-                    target_pitch=getattr(self.gait_engine, "target_pitch", 0.0)
-                )
-
-            
-            # 7. RECORD DATA
-            self.recorder.record_tick(state)
-            
-            # 8. STEP
-            self.backend.step()
+            # 5. ACT & STEP (Thread-safe)
+            with self.lock:
+                self.backend.send_commands(safe_torques)
+                
+                # Forward navigation velocities, target height, and target pitch to backend
+                if hasattr(self.backend, "set_navigation_targets"):
+                    self.backend.set_navigation_targets(
+                        mode=self.gait_engine.current_state,
+                        vx=self.gait_engine.walk_speed_x,
+                        vy=self.gait_engine.walk_speed_y,
+                        vyaw=self.gait_engine.walk_speed_yaw,
+                        target_height=self.gait_engine.target_height,
+                        target_pitch=getattr(self.gait_engine, "target_pitch", 0.0)
+                    )
+                
+                # 7. RECORD DATA
+                self.recorder.record_tick(state)
+                
+                # 8. STEP
+                self.backend.step()
             
             # Real-time pacing (200 Hz)
             elapsed = time.perf_counter() - tick_start

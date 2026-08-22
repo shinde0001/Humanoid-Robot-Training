@@ -415,13 +415,43 @@ function connectWebSockets() {
 
     videoSocket = new WebSocket(WS_URL_VIDEO);
     videoSocket.onmessage = (event) => {
-        camFeed.src = "data:image/jpeg;base64," + event.data;
+        const src = "data:image/jpeg;base64," + event.data;
+        if (camFeed) camFeed.src = src;
+        if (activeModalType === 'ego' && modalFeed) modalFeed.src = src;
     };
 
     cinematicSocket = new WebSocket(WS_URL_VIDEO_CINEMATIC);
     cinematicSocket.onmessage = (event) => {
-        if(cinematicFeed) cinematicFeed.src = "data:image/jpeg;base64," + event.data;
+        const src = "data:image/jpeg;base64," + event.data;
+        if (cinematicFeed) cinematicFeed.src = src;
+        if (activeModalType === 'sim' && modalFeed) modalFeed.src = src;
     };
+}
+
+// Fullscreen Video Modal Logic
+let activeModalType = null;
+const videoModal = document.getElementById('video-modal');
+const modalFeed = document.getElementById('modal-feed');
+const modalCamTitle = document.getElementById('modal-cam-title');
+const btnCloseModal = document.getElementById('btn-close-modal');
+
+window.openVideoModal = function(type) {
+    activeModalType = type;
+    if (type === 'sim') {
+        modalCamTitle.innerText = "[ 3D SIMULATION // HIGH-RES FULLSCREEN CHASE CAM ]";
+    } else {
+        modalCamTitle.innerText = "[ ROBOT VISION // HIGH-RES FULLSCREEN EGOCENTRIC ]";
+    }
+    if (videoModal) videoModal.classList.remove('hidden');
+};
+
+window.closeVideoModal = function() {
+    activeModalType = null;
+    if (videoModal) videoModal.classList.add('hidden');
+};
+
+if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', closeVideoModal);
 }
 
 // REST & Controls

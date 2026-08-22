@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PARTH ROBOTICS | HUMANOID TELEMETRY & MOTOR DIAGNOSTICS</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=pro_aerospace_v10">
+    <link rel="stylesheet" href="style.css?v=pro_aerospace_v15">
 </head>
 <body>
     <div class="overlay-grid"></div>
@@ -48,7 +48,6 @@
         <!-- MAIN 3-COLUMN DASHBOARD -->
         <main class="dashboard-grid">
             
-            <!-- LEFT COLUMN: OPTICAL VISION & SENSOR SUITE -->
             <!-- LEFT COLUMN: SIMULATION & OPTICAL SENSOR SUITE -->
             <section class="panel glass-panel vision-panel">
                 <div class="panel-header">
@@ -56,19 +55,10 @@
                     <span class="badge" id="vision-badge">DUAL FEED ACTIVE</span>
                 </div>
                 
-                <!-- 1. LIVE 3D PHYSICS SIMULATION VIEW (CHASE CAM) -->
-                <div class="video-container" id="sim-video-container" style="position: relative; margin-bottom: 10px; flex: 1 1 240px; min-height: 200px;">
-                    <span id="sim-cam-label" style="position:absolute; top:8px; left:8px; font-size:11px; color:var(--neon-amber); z-index:10; background:rgba(0,0,0,0.75); padding:3px 8px; border:1px solid var(--neon-amber); border-radius:4px; font-family:var(--font-mono);">[ 3D SIMULATION // CHASE CAM ]</span>
-                    <img id="cinematic-feed" src="" alt="Awaiting 3D Simulation Stream..." style="display: block; width: 100%; height: 100%; object-fit: cover;">
-                    <div class="hud-corner top-left"></div>
-                    <div class="hud-corner top-right"></div>
-                    <div class="hud-corner bottom-left"></div>
-                    <div class="hud-corner bottom-right"></div>
-                </div>
-
-                <!-- 2. ROBOT ONBOARD HEAD STEREO CAMERA (EGOCENTRIC POV) -->
-                <div class="video-container" id="ego-video-container" style="position: relative; margin-bottom: 8px; flex: 1 1 200px; min-height: 180px;">
+                <!-- 1. ROBOT ONBOARD HEAD STEREO CAMERA (EGOCENTRIC POV) -->
+                <div class="video-container" id="ego-video-container" style="position: relative; margin-bottom: 10px; flex: 1 1 200px; min-height: 180px;">
                     <span id="ego-cam-label" style="position:absolute; top:8px; left:8px; font-size:11px; color:var(--neon-cyan); z-index:10; background:rgba(0,0,0,0.75); padding:3px 8px; border:1px solid var(--neon-cyan); border-radius:4px; font-family:var(--font-mono);">[ ROBOT VISION // EGOCENTRIC ]</span>
+                    <button class="btn-expand-cam" onclick="openVideoModal('ego')" title="Expand Egocentric Camera View" style="position:absolute; top:8px; right:8px; z-index:10; font-size:10px; padding:3px 8px; background:rgba(0,0,0,0.75); color:var(--neon-cyan); border:1px solid var(--neon-cyan); border-radius:3px; cursor:pointer; font-family:var(--font-mono); font-weight:bold;">⤢ EXPAND</button>
                     <img id="camera-feed" src="" alt="Awaiting Robot Camera Stream..." style="display: block; width: 100%; height: 100%; object-fit: cover;">
                     <div class="crosshair"></div>
                     <div class="hud-corner top-left"></div>
@@ -76,6 +66,17 @@
                     <div class="hud-corner bottom-left"></div>
                     <div class="hud-corner bottom-right"></div>
                     <div class="scanline"></div>
+                </div>
+
+                <!-- 2. LIVE 3D PHYSICS SIMULATION VIEW (CHASE CAM) -->
+                <div class="video-container" id="sim-video-container" style="position: relative; margin-bottom: 8px; flex: 2 1 280px; min-height: 260px;">
+                    <span id="sim-cam-label" style="position:absolute; top:8px; left:8px; font-size:11px; color:var(--neon-amber); z-index:10; background:rgba(0,0,0,0.75); padding:3px 8px; border:1px solid var(--neon-amber); border-radius:4px; font-family:var(--font-mono);">[ 3D SIMULATION // CHASE CAM ]</span>
+                    <button class="btn-expand-cam" onclick="openVideoModal('sim')" title="Expand 3D Simulation View" style="position:absolute; top:8px; right:8px; z-index:10; font-size:10px; padding:3px 8px; background:rgba(0,0,0,0.75); color:var(--neon-amber); border:1px solid var(--neon-amber); border-radius:3px; cursor:pointer; font-family:var(--font-mono); font-weight:bold;">⤢ EXPAND SIMULATION</button>
+                    <img id="cinematic-feed" src="" alt="Awaiting 3D Simulation Stream..." style="display: block; width: 100%; height: 100%; object-fit: cover;">
+                    <div class="hud-corner top-left"></div>
+                    <div class="hud-corner top-right"></div>
+                    <div class="hud-corner bottom-left"></div>
+                    <div class="hud-corner bottom-right"></div>
                 </div>
 
                 <div class="telemetry-readout">
@@ -334,8 +335,43 @@
                     <span class="badge badge-safety">TIER 1 &amp; 2 ARMED</span>
                 </div>
                 
+                <div class="manual-module" style="margin-bottom: 16px;">
+                    <h3>MANUAL CONTROL &amp; ACTIONS</h3>
+                    <div class="d-pad">
+                        <button class="d-btn up" id="dpad-w" title="Walk Forward (W / ↑)">W</button>
+                        <button class="d-btn left" id="dpad-a" title="Turn Left (A / ←)">A</button>
+                        <button class="d-btn down" id="dpad-s" title="Walk Backward (S / ↓)">S</button>
+                        <button class="d-btn right" id="dpad-d" title="Turn Right (D / →)">D</button>
+                    </div>
+
+                    <div class="section-label">LOCOMOTION &amp; STANCE</div>
+                    <div class="action-grid-3">
+                        <button id="btn-stand" class="btn btn-outline-cyan btn-sm" title="Stand (Space / Esc)">STAND</button>
+                        <button id="btn-crouch" class="btn btn-outline-cyan btn-sm" title="Crouch (C)">CROUCH</button>
+                        <button id="btn-jump" class="btn btn-outline-cyan btn-sm" title="Dynamic Jump (J)">JUMP 🚀</button>
+                    </div>
+
+                    <div class="section-label">HAND &amp; ARM GESTURES</div>
+                    <div class="action-grid-4">
+                        <button id="btn-wave" class="btn btn-outline-cyan btn-sm" title="Wave Right Hand (H)">WAVE 👋</button>
+                        <button id="btn-punch" class="btn btn-outline-cyan btn-sm" title="Boxing Punch (P)">PUNCH 🥊</button>
+                        <button id="btn-victory" class="btn btn-outline-cyan btn-sm" title="Victory Cheer (V)">VICTORY ✌️</button>
+                        <button id="btn-fight" class="btn btn-outline-cyan btn-sm" title="Fight Stance (F)">GUARD 🛡️</button>
+                    </div>
+
+                    <div class="section-label">HEAD &amp; TORSO TRACKING</div>
+                    <div class="action-grid-4">
+                        <button id="btn-look-left" class="btn btn-outline-cyan btn-sm" title="Look Left (Q)">LOOK L ◀</button>
+                        <button id="btn-look-right" class="btn btn-outline-cyan btn-sm" title="Look Right (E)">LOOK R ▶</button>
+                        <button id="btn-scan" class="btn btn-outline-cyan btn-sm" title="Radar Scan (R)">SCAN 🔄</button>
+                        <button id="btn-namaste" class="btn btn-outline-cyan btn-sm" title="Namaste Greeting (N)">NAMASTE 🙏</button>
+                    </div>
+
+                    <button id="btn-clear-override" class="btn btn-outline-orange mt-2 hidden">CLEAR OVERRIDE</button>
+                </div>
+
                 <!-- SELECTED MOTOR QUICK INSPECTION CARD WITH EMBEDDED TACTICAL SWITCHES -->
-                <div class="motor-inspect-card" id="motor-inspect-card" style="margin-bottom: 16px;">
+                <div class="motor-inspect-card" id="motor-inspect-card">
                     <div class="card-header">
                         <span class="inspect-title" id="inspect-name">CENTRAL PDU // 48V BATTERY &amp; BMS</span>
                         <span class="inspect-badge" id="inspect-status">NOMINAL (100%)</span>
@@ -386,43 +422,21 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="manual-module">
-                    <h3>MANUAL CONTROL &amp; ACTIONS</h3>
-                    <div class="d-pad">
-                        <button class="d-btn up" id="dpad-w" title="Walk Forward (W / ↑)">W</button>
-                        <button class="d-btn left" id="dpad-a" title="Turn Left (A / ←)">A</button>
-                        <button class="d-btn down" id="dpad-s" title="Walk Backward (S / ↓)">S</button>
-                        <button class="d-btn right" id="dpad-d" title="Turn Right (D / →)">D</button>
-                    </div>
-
-                    <div class="section-label">LOCOMOTION &amp; STANCE</div>
-                    <div class="action-grid-3">
-                        <button id="btn-stand" class="btn btn-outline-cyan btn-sm" title="Stand (Space / Esc)">STAND</button>
-                        <button id="btn-crouch" class="btn btn-outline-cyan btn-sm" title="Crouch (C)">CROUCH</button>
-                        <button id="btn-jump" class="btn btn-outline-cyan btn-sm" title="Dynamic Jump (J)">JUMP 🚀</button>
-                    </div>
-
-                    <div class="section-label">HAND &amp; ARM GESTURES</div>
-                    <div class="action-grid-4">
-                        <button id="btn-wave" class="btn btn-outline-cyan btn-sm" title="Wave Right Hand (H)">WAVE 👋</button>
-                        <button id="btn-punch" class="btn btn-outline-cyan btn-sm" title="Boxing Punch (P)">PUNCH 🥊</button>
-                        <button id="btn-victory" class="btn btn-outline-cyan btn-sm" title="Victory Cheer (V)">VICTORY ✌️</button>
-                        <button id="btn-fight" class="btn btn-outline-cyan btn-sm" title="Fight Stance (F)">GUARD 🛡️</button>
-                    </div>
-
-                    <div class="section-label">HEAD &amp; TORSO TRACKING</div>
-                    <div class="action-grid-4">
-                        <button id="btn-look-left" class="btn btn-outline-cyan btn-sm" title="Look Left (Q)">LOOK L ◀</button>
-                        <button id="btn-look-right" class="btn btn-outline-cyan btn-sm" title="Look Right (E)">LOOK R ▶</button>
-                        <button id="btn-scan" class="btn btn-outline-cyan btn-sm" title="Radar Scan (R)">SCAN 🔄</button>
-                        <button id="btn-namaste" class="btn btn-outline-cyan btn-sm" title="Namaste Greeting (N)">NAMASTE 🙏</button>
-                    </div>
-
-                    <button id="btn-clear-override" class="btn btn-outline-orange mt-2 hidden">CLEAR OVERRIDE</button>
-                </div>
             </section>
         </main>
+    </div>
+    
+    <!-- FULLSCREEN HIGH-RES CAMERA MODAL -->
+    <div id="video-modal" class="video-modal hidden">
+        <div class="video-modal-content">
+            <div class="video-modal-header">
+                <span id="modal-cam-title" class="modal-cam-title">[ 3D SIMULATION // HIGH-RES FULLSCREEN ]</span>
+                <button class="btn-modal-close" id="btn-close-modal">✕ CLOSE [ ESC ]</button>
+            </div>
+            <div class="video-modal-body">
+                <img id="modal-feed" src="" alt="Fullscreen Stream Feed">
+            </div>
+        </div>
     </div>
     
     <script src="app.js"></script>

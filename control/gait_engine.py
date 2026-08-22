@@ -209,8 +209,8 @@ class GaitEngine:
                 pos[JOINT_NAMES.index("left_knee")] = 0.80 + 0.05 * frac
                 pos[JOINT_NAMES.index("right_knee")] = 0.80 + 0.05 * frac
                 # Fold hands
-                pos[JOINT_NAMES.index("left_shoulder_roll")] = 0.0 - 0.2 * frac
-                pos[JOINT_NAMES.index("right_shoulder_roll")] = 0.0 + 0.2 * frac
+                pos[JOINT_NAMES.index("left_shoulder_roll")] = 0.0 + 0.2 * frac
+                pos[JOINT_NAMES.index("right_shoulder_roll")] = 0.0 - 0.2 * frac
                 pos[JOINT_NAMES.index("left_shoulder_pitch")] = 0.0 - 0.4 * frac
                 pos[JOINT_NAMES.index("right_shoulder_pitch")] = 0.0 - 0.4 * frac
                 pos[JOINT_NAMES.index("left_elbow")] = 0.10 + 1.4 * frac
@@ -225,8 +225,8 @@ class GaitEngine:
                 pos[JOINT_NAMES.index("right_hip_pitch")] = -0.60
                 pos[JOINT_NAMES.index("left_knee")] = 0.85
                 pos[JOINT_NAMES.index("right_knee")] = 0.85
-                pos[JOINT_NAMES.index("left_shoulder_roll")] = -0.2
-                pos[JOINT_NAMES.index("right_shoulder_roll")] = 0.2
+                pos[JOINT_NAMES.index("left_shoulder_roll")] = 0.2
+                pos[JOINT_NAMES.index("right_shoulder_roll")] = -0.2
                 pos[JOINT_NAMES.index("left_shoulder_pitch")] = -0.4
                 pos[JOINT_NAMES.index("right_shoulder_pitch")] = -0.4
                 pos[JOINT_NAMES.index("left_elbow")] = 1.5
@@ -243,8 +243,8 @@ class GaitEngine:
                 pos[JOINT_NAMES.index("left_knee")] = 0.85 - 0.05 * frac
                 pos[JOINT_NAMES.index("right_knee")] = 0.85 - 0.05 * frac
                 
-                pos[JOINT_NAMES.index("left_shoulder_roll")] = -0.2 * (1.0 - frac)
-                pos[JOINT_NAMES.index("right_shoulder_roll")] = 0.2 * (1.0 - frac)
+                pos[JOINT_NAMES.index("left_shoulder_roll")] = 0.2 * (1.0 - frac)
+                pos[JOINT_NAMES.index("right_shoulder_roll")] = -0.2 * (1.0 - frac)
                 pos[JOINT_NAMES.index("left_shoulder_pitch")] = -0.4 * (1.0 - frac)
                 pos[JOINT_NAMES.index("right_shoulder_pitch")] = -0.4 * (1.0 - frac)
                 pos[JOINT_NAMES.index("left_elbow")] = 0.10 + 1.4 * (1.0 - frac)

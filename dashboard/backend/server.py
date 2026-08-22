@@ -190,21 +190,29 @@ async def websocket_telemetry(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
 
+def capture_frame(sim, cam_name, w, h):
+    try:
+        # Protect MuJoCo render call with sim.lock to prevent thread-safety race conditions
+        with sim.lock:
+            img = sim.backend.render_camera(cam_name, w, h)
+        if img is not None:
+            img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            _, buffer = cv2.imencode('.jpg', img_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 65])
+            return base64.b64encode(buffer).decode('utf-8')
+    except Exception as e:
+        print(f"Cam {cam_name} Error: {e}")
+    return None
+
 @app.websocket("/ws/video")
 async def websocket_video(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
             if sim_instance:
-                try:
-                    img = sim_instance.backend.render_camera("egocentric", 320, 240)
-                    if img is not None:
-                        img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-                        _, buffer = cv2.imencode('.jpg', img_bgr)
-                        jpg_as_text = base64.b64encode(buffer).decode('utf-8')
-                        await websocket.send_text(jpg_as_text)
-                except Exception:
-                    pass
+                # Direct call (no to_thread) to prevent OpenGL thread bound crashes
+                jpg_as_text = capture_frame(sim_instance, "egocentric", 384, 288)
+                if jpg_as_text:
+                    await websocket.send_text(jpg_as_text)
             await asyncio.sleep(1 / 15.0)
     except WebSocketDisconnect:
         pass
@@ -215,15 +223,10 @@ async def websocket_video_cinematic(websocket: WebSocket):
     try:
         while True:
             if sim_instance:
-                try:
-                    img = sim_instance.backend.render_camera("cinematic", 320, 240)
-                    if img is not None:
-                        img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-                        _, buffer = cv2.imencode('.jpg', img_bgr)
-                        jpg_as_text = base64.b64encode(buffer).decode('utf-8')
-                        await websocket.send_text(jpg_as_text)
-                except Exception:
-                    pass
+                # Direct call (no to_thread)
+                jpg_as_text = capture_frame(sim_instance, "cinematic", 384, 288)
+                if jpg_as_text:
+                    await websocket.send_text(jpg_as_text)
             await asyncio.sleep(1 / 15.0)
     except WebSocketDisconnect:
         pass
